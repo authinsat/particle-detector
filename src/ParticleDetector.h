@@ -1,12 +1,16 @@
 /*
 
     This is a library for a particle detector 
-
-    Functions include
-    -      I2C communication
-    - 
+    
+    The board uses I2C for communication.
+    
+    The board communicates with [?] I2C devices:
 
 */
+
+// Include File Headers
+#include "xCore.h"
+
 
 #ifndef ParticleDetector_h
 #define ParticleDetector_h
@@ -22,6 +26,7 @@
 class ParticleDetector {
     public:
         ParticleDetector(void);
+        void setDataMode(uint8_t);
         int getDetections();
         float getTimeSinceLastDetection();
         float getDetectionsPerMin();
@@ -30,6 +35,7 @@ class ParticleDetector {
 
     private:
         int detections;
+        uint8_t currentMode;
 
 };
 

@@ -4,7 +4,8 @@
 
     Functions include
     -      I2C communication
-    - 
+    -      Set data collection mode (individual (True) or flux(False))
+
 
 */
 
@@ -12,11 +13,6 @@
 
 ParticleDetector::ParticleDetector(void) {
 
-}
-
-int ParticleDetector::getDetections() {
-
-    return 0;
 }
 
 int ParticleDetector::getDetections() {
@@ -42,4 +38,14 @@ float  ParticleDetector::getAvgTimeBetweenDetections() {
 float  ParticleDetector::getAvgMagnitude() {
 
     return 0;
+}
+
+void   setDataMode(uint8_t mode){
+    //Individual mode = 1
+    //Flux mode = 0
+    //int mode : requested mode
+    //int currentMode : current mode; default on program start is flux (False)
+    if(mode!=currentMode){
+        currentMode = mode;
+    }
 }
