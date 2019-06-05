@@ -23,16 +23,18 @@ bool setupSensor() {
     return false;
 }
 
-int ParticleDetector::getDetection(time_t beginning, time_t end) {
+String getDetectionsPeriod(time_t beginning, time_t end)(time_t beginning, time_t end) {
 
-    return 0;
+    return "";
+}
+Detection ParticleDetector::getDetection(int desIndex){
 }
 
 void ParticleDetector::detect(){
 
 }
 
-void clearRecordedDetections(){
+void ParticleDetector::clearRecordedDetections(){
 
 }
 

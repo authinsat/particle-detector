@@ -18,7 +18,6 @@
 #include <Arduino.h>
 #include "inttypes.h"
 #include "Wire.h"
-#include "xCore.h"
 #include "math.h"
 #include <elapsedMillis.h>
 
