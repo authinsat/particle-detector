@@ -9,39 +9,41 @@
 
 */
 
+
 #include "ParticleDetector.h"
 
-ParticleDetector::ParticleDetector(void) {
+class Detection; // forward declaration
 
+ParticleDetector::ParticleDetector() {
+    class Detection(){
+    };
 }
 
-ParticleDetector::ParticleDetector::Detection(void){
-
-}
-
-bool setupSensor() {
+bool ParticleDetector::setupSensor() {
     return false;
 }
 
-String getDetectionsPeriod(time_t beginning, time_t end)(time_t beginning, time_t end) {
+String ParticleDetector::getDetectionsPeriod(time_t beginning, time_t end) {
 
     return "";
 }
-Detection ParticleDetector::getDetection(int desIndex){
+//Detection 
+int ParticleDetector::getDetection(int desIndex){
 }
 
 void ParticleDetector::detect(){
 
 }
 
-void ParticleDetector::clearRecordedDetections(){
+//std::vector<Detection> 
+int ParticleDetector::clearRecordedDetections(){
 
 }
 
-float  ParticleDetector::getTimeSinceLastDetection() {
+double  ParticleDetector::getTimeSinceLastDetection() {
     time_t current_time;
     current_time = time(NULL);
-    return difftime(recordedDetections.back().time,current_time);
+    //return difftime(recordedDetections.back().time,current_time);
 }
 
 float  ParticleDetector::getDetectionsPerMin() { 
@@ -59,12 +61,12 @@ float  ParticleDetector::getAvgMagnitude() {
     return 0;
 }
 
-void   setDataMode(uint8_t mode, unsigned int delta=10){
+void   ParticleDetector::setDataMode(uint8_t mode, unsigned int delta=10){
     //Individual mode = 1
     //Flux mode = 0
     //int mode : requested mode
     //int currentMode : current mode; default on program start is flux (False)
-    if(mode!=currentMode){
-        currentMode = mode;
-    }
+    // if(mode!=currentMode){
+    //     currentMode = mode;
+    // }
 }

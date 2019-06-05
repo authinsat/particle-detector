@@ -18,8 +18,11 @@
 #include <Arduino.h>
 #include "inttypes.h"
 #include "Wire.h"
+#include "xCore.h"
 #include "math.h"
 #include <elapsedMillis.h>
+#include <vector>
+#include <string>
 
 //NOTES for lily
 //delta ms delta t individual interrupt
@@ -28,12 +31,26 @@
 /*=========================================================================*/
  
 class ParticleDetector {
+    private:
+        
+        uint8_t currentMode; //current data collection mode
+        unsigned int currentDelta; //current delta time if currentMode is 1:flux
+        //std::vector<Detection> recordedDetections; //dynamically sized vector of detection objects; new detections are added to this vector
     public:
+        class Detection {
+            public:
+                /*=========================================================================*/
+            private:
+                uint8_t modeType; //what mode was measurement taken in
+                time_t time; //time measurement was taken as time object
+                float magnitude; //magnitude of detection
+
+        };
         /**
         * Constructor
         * Creates a new instance of ParticleDetector class.
         */  
-        ParticleDetector(void);
+        ParticleDetector();
        /*=========================================================================*/
         /*
         * Sets up the sensor
@@ -48,7 +65,7 @@ class ParticleDetector {
         * @param delta. desired delta time between data collections in seconds if data collection mode is 1: Flux. Required if mode is 1: Flux. Default argument = 0.
         * @return none
         */
-        void setDataMode(uint8_t mode, unsigned int delta=0);
+        void setDataMode(uint8_t mode, unsigned int delta);
         /*=========================================================================*/
         /*
         * Takes detection measurement then pushes <Detection> object to vector recordedDetections 
@@ -69,7 +86,8 @@ class ParticleDetector {
         * @param desIndex. Desired index of detection
         * @return desired detection as <Detection> object
         */
-        <Detection> getDetection(int desIndex);
+        //Detection 
+        int getDetection(int desIndex);
         /*=========================================================================*/
         /*
         * Gets time since last detection (last Detection in recordedDetections vector)
@@ -80,7 +98,7 @@ class ParticleDetector {
         /*
         * Gets average detections per minute starting with first detection.
         * Skips detections in the current time's minute.
-        * @return average as float
+        * @return average as double
         */
         float getDetectionsPerMin();
         /*=========================================================================*/
@@ -102,27 +120,10 @@ class ParticleDetector {
         * Clears the vector recordedDetections and returns a copy of that vector before clear
         * @return vector of Detection objects
         */
-        std::vector<Detection> clearRecordedDetections();
+        //std::vector<Detection> 
+        int clearRecordedDetections();
         /*=========================================================================*/
 
-    private:
-        class Detection {
-            public:
-                /**
-                * Constructor
-                * Creates a new instance of ParticleDetector class.
-                */ 
-                ParticleDetector(void);
-                /*=========================================================================*/
-            private:
-                uint8_t modeType; //what mode was measurement taken in
-                time_t time; //time measurement was taken as time object
-                float magnitude; //magnitude of detection
-
-        };
-        uint8_t currentMode; //current data collection mode
-        unsigned int currentDelta; //current delta time if currentMode is 1:flux
-        std::vector<Detection> recordedDetections; //dynamically sized vector of detection objects; new detections are added to this vector
 
 
 };
