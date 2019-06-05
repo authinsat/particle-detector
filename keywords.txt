@@ -9,6 +9,7 @@ getTimeSinceLastDetection 	KEYWORD2
 getDetectionsPerMin 		KEYWORD2
 getAvgTimeBetweenDetections KEYWORD2
 getAvgMagnitude 			KEYWORD2
+setDataMode					KEYWORD2
 
 # Constants	(LITERAL1)
 

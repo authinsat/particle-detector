@@ -15,14 +15,31 @@ ParticleDetector::ParticleDetector(void) {
 
 }
 
-int ParticleDetector::getDetections() {
+ParticleDetector::ParticleDetector::Detection(void){
+
+}
+
+bool setupSensor() {
+    return false;
+}
+
+int ParticleDetector::getDetection(time_t beginning, time_t end) {
 
     return 0;
 }
 
-float  ParticleDetector::getTimeSinceLastDetection() {
+void ParticleDetector::detect(){
 
-    return 0;
+}
+
+void clearRecordedDetections(){
+
+}
+
+float  ParticleDetector::getTimeSinceLastDetection() {
+    time_t current_time;
+    current_time = time(NULL);
+    return difftime(recordedDetections.back().time,current_time);
 }
 
 float  ParticleDetector::getDetectionsPerMin() { 
@@ -40,7 +57,7 @@ float  ParticleDetector::getAvgMagnitude() {
     return 0;
 }
 
-void   setDataMode(uint8_t mode){
+void   setDataMode(uint8_t mode, unsigned int delta=10){
     //Individual mode = 1
     //Flux mode = 0
     //int mode : requested mode
