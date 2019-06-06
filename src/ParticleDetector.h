@@ -27,25 +27,27 @@
 //NOTES for lily
 //delta ms delta t individual interrupt
 //clear recordedDetections between mode switches
+//hold 3000 in recordedDetections
+//milis timestamp (change time_t to ms since beginning of program)
+//get rid of modeType (struct Detection)
+//mag 2 bit
+//mix calculate()
 
 /*=========================================================================*/
  
 class ParticleDetector {
     private:
-        
+        struct Detection {
+            //get rid of modeType
+            uint8_t modeType; //what mode was measurement taken in
+            time_t time; //time measurement was taken as time object
+            float magnitude; //magnitude of detection make 2 bit #
+        };
         uint8_t currentMode; //current data collection mode
         unsigned int currentDelta; //current delta time if currentMode is 1:flux
-        //std::vector<Detection> recordedDetections; //dynamically sized vector of detection objects; new detections are added to this vector
+        std::vector<Detection> recordedDetections; //dynamically sized vector of detection objects; new detections are added to this vector
     public:
-        class Detection {
-            public:
-                /*=========================================================================*/
-            private:
-                uint8_t modeType; //what mode was measurement taken in
-                time_t time; //time measurement was taken as time object
-                float magnitude; //magnitude of detection
-
-        };
+        
         /**
         * Constructor
         * Creates a new instance of ParticleDetector class.
@@ -65,7 +67,7 @@ class ParticleDetector {
         * @param delta. desired delta time between data collections in seconds if data collection mode is 1: Flux. Required if mode is 1: Flux. Default argument = 0.
         * @return none
         */
-        void setDataMode(uint8_t mode, unsigned int delta);
+        void setDataMode(uint8_t mode, unsigned int delta=10);
         /*=========================================================================*/
         /*
         * Takes detection measurement then pushes <Detection> object to vector recordedDetections 
@@ -86,8 +88,7 @@ class ParticleDetector {
         * @param desIndex. Desired index of detection
         * @return desired detection as <Detection> object
         */
-        //Detection 
-        int getDetection(int desIndex);
+        ParticleDetector::Detection getDetection(int desIndex);
         /*=========================================================================*/
         /*
         * Gets time since last detection (last Detection in recordedDetections vector)
@@ -120,8 +121,19 @@ class ParticleDetector {
         * Clears the vector recordedDetections and returns a copy of that vector before clear
         * @return vector of Detection objects
         */
-        //std::vector<Detection> 
-        int clearRecordedDetections();
+        std::vector<ParticleDetector::Detection> clearRecordedDetections();
+        /*=========================================================================*/
+        /*
+        * returns the current Delta time
+        * @return currentDelta
+        */
+        unsigned int checkDelta();
+        /*=========================================================================*/
+        /*
+        * returns the current data collection mode
+        * @return currentMode
+        */
+        uint8_t checkMode();
         /*=========================================================================*/
 
 
