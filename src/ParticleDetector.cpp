@@ -11,18 +11,26 @@
 
 #include "ParticleDetector.h"
 
-//struct Detection; // forward declaration
 
 ParticleDetector::ParticleDetector() {
-    currentMode=0;
+    currentMode=1;
     currentDelta=10;
-}
 
+}
+//HERE_---------------_
 bool ParticleDetector::setupSensor() {
+    //test me
     if(true){
+        tickerTimer.attach_ms(currentDelta, ParticleDetector::detect);
+        ParticleDetector::startDetecting();
         return true;
     }
     if(false){return false;}
+}
+
+void ParticleDetector::startDetecting(){
+    tickerTimer.attach_ms(currentDelta, ParticleDetector::detect);
+    timerr = 0;
 }
 
 ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
@@ -31,31 +39,46 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
 
 void ParticleDetector::detect(){
     ParticleDetector::Detection newDetection;
-    newDetection.modeType = currentMode;
-    time_t current_time;
-    current_time = time(NULL);
-    newDetection.time = current_time; 
+    newDetection.time = timerr; 
     newDetection.magnitude = 3.367;
+    while(recordedDetections.size()>=3000){
+        recordedDetections.erase(recordedDetections.begin());
+    }
     recordedDetections.push_back(newDetection);
 }
 
-std::vector<ParticleDetector::Detection> ParticleDetector::clearRecordedDetections(){
+void ParticleDetector::clearRecordedDetections(){
     std::vector<ParticleDetector::Detection> recordedDetectionsCopy = recordedDetections;
     recordedDetections.clear();
-    return recordedDetectionsCopy;
 }
 
 double  ParticleDetector::getTimeSinceLastDetection() {
-    time_t current_time;
+    unsigned long current_time;
     current_time = time(NULL);
     return difftime(recordedDetections.back().time,current_time);
 }
+std::vector<ParticleDetector::Detection> ParticleDetector::returnRecordedDetections(){
+    return recordedDetections;
+}
+void ParticleDetector::setDataMode(uint8_t mode, unsigned int delta){
+    if(currentDelta!=delta){
+        currentDelta = delta;
+        ParticleDetector::clearRecordedDetections();
+        tickerTimer.attach_ms(currentDelta, ParticleDetector::detect);
 
-void   ParticleDetector::setDataMode(uint8_t mode, unsigned int delta){
-    if(mode!=currentMode){
-         currentMode = mode;
     }
-    currentDelta = delta;
+    
+    if(mode!=currentMode){
+        currentMode = mode;
+        ParticleDetector::clearRecordedDetections();
+        if(mode==1){
+            tickerTimer.attach_ms(currentDelta, ParticleDetector::detect);
+        }
+        else{
+            tickerTimer.detach();
+        }
+        
+    }
 }
 unsigned int ParticleDetector::checkDelta(){
     return currentDelta;
@@ -64,36 +87,9 @@ uint8_t ParticleDetector::checkMode(){
     return currentMode;
 }
 
-
-
-
-float  ParticleDetector::getDetectionsPerMin() { 
-    //float
-    double startingTime = static_cast<double>(recordedDetections.at(0).time);
-    double endTime = static_cast<double>(recordedDetections.back().time);
-    double seconds = endTime-startingTime;
-    double minutes = (seconds)/60;
-    double secStartTime = 0;
-    double secEndTime = 0;
-    std::vector<double> holdAverages;
-    double iterDetections=0;
-    double counter = 0;
-    floor(minutes);
-    for(double i = 0; i<minutes; i++){
-        double vectorVolCounter = 0;
-        secEndTime+=60;
-        while(secStartTime<=(recordedDetections.at(iterDetections).time-startingTime)<secEndTime){
-            vectorVolCounter++;
-            iterDetections++;
-        }
-        holdAverages.push_back(vectorVolCounter);
-        secStartTime+=60;
-    }
-    double averageRet=0;
-    for(int j=0; j < holdAverages.size(); j++){
-        averageRet+=holdAverages[j];
-    }
-    averageRet/=holdAverages.size();
+float  ParticleDetector::getDetectionsPerMin() {
+    int perMin = millis()/60; 
+    float averageRet = recordedDetections.size()/perMin;
     return averageRet;
 }
 
@@ -116,7 +112,19 @@ float  ParticleDetector::getAvgMagnitude() {
     float average = counting/cSize; 
     return average;
 }
-String ParticleDetector::getDetectionsPeriod(time_t beginning, time_t end) {
 
-    return "";
+std::string ParticleDetector::getDetectionsPeriod(unsigned long beginning, unsigned long end) {
+    std::string returnString = "";
+    int counter = 0;
+    while(recordedDetections.at(counter).time>beginning){
+        counter++;
+    }
+    while((recordedDetections.at(counter).time)<=end){
+        char msg[200];
+        unsigned long noUseCaseBecauseWHYWOULDYOU = recordedDetections.at(counter).time;
+        sprintf(msg,"Detection: %d \nTime Recorded: %d \nMagnitude: %d \n",counter,noUseCaseBecauseWHYWOULDYOU,recordedDetections.at(counter).magnitude);
+        returnString+=msg;
+        counter++;
+        }
+    return returnString;
 } 

@@ -20,34 +20,63 @@
 #include "Wire.h"
 #include "xCore.h"
 #include "math.h"
-#include <elapsedMillis.h>
 #include <vector>
 #include <string>
+#include <elapsedMillis.h>
+#include <Ticker.h>
+//#include <TimerThree.h> //dependency
 
 //NOTES for lily
 //delta ms delta t individual interrupt
-//clear recordedDetections between mode switches
-//hold 3000 in recordedDetections
-//milis timestamp (change time_t to ms since beginning of program)
-//get rid of modeType (struct Detection)
-//mag 2 bit
-//mix calculate()
+//A2 magnitude sensor
+//setupSensor
+
 
 /*=========================================================================*/
  
 class ParticleDetector {
     private:
+        /*=========================================================================*/
+        /* struct container for Detection object 
+        * time: milliseconds since last time startDetecting() was called
+        * magnitude: magnitude of detection as recorded by sensor
+        */
         struct Detection {
-            //get rid of modeType
-            uint8_t modeType; //what mode was measurement taken in
-            time_t time; //time measurement was taken as time object
-            float magnitude; //magnitude of detection make 2 bit #
+            elapsedMillis time; 
+            uint16_t magnitude;
         };
-        uint8_t currentMode; //current data collection mode
-        unsigned int currentDelta; //current delta time if currentMode is 1:flux
-        std::vector<Detection> recordedDetections; //dynamically sized vector of detection objects; new detections are added to this vector
-    public:
         
+        /*=========================================================================*/
+        //current data collection mode. This library handles 0: Individual and 1: Flux. Default is 1:Flux.
+        uint8_t currentMode; 
+        
+        /*=========================================================================*/
+        //time in ms since last time startDetecting() was called
+        elapsedMillis timerr; 
+        
+        /*=========================================================================*/
+        /* struct container for Detection object
+        */
+        unsigned int currentDelta; //current delta time if currentMode is 1:flux
+       
+        /*=========================================================================*/
+        /* Dynamically sized vector of detection objects
+        * new detections are added to this vector
+        * vector may hold up to 3000 detections at a time
+        * if container is at 3000 and detect() is called, the first detection in the vector is erased to make space
+        */
+        std::vector<Detection> recordedDetections; 
+        
+        /*=========================================================================*/
+        /*
+        * Allows save of entire recordedDetections vector
+        * Call this before changing data collection modes or clearing recordedDetections to save vector data
+        * @return current recordedDetection
+        */
+        std::vector<ParticleDetector::Detection> returnRecordedDetections();
+        /*=========================================================================*/
+    public:
+        Ticker tickerTimer;
         /**
         * Constructor
         * Creates a new instance of ParticleDetector class.
@@ -57,9 +86,16 @@ class ParticleDetector {
         /*
         * Sets up the sensor
         * Call this in setup(), before reading any sensor data.
-        * @return true if setup was successful.
+        * @return true if setup was successful
         */
         bool setupSensor();
+        /*=========================================================================*/
+        /*
+        * Awakes the sensor to start taking detections
+        * Called in setupSensor in flux mode with default delta time of 10
+        * @return none
+        */
+        void startDetecting();
         /*=========================================================================*/
         /*
         * Sets Particle Sensor data collection mode
@@ -77,11 +113,11 @@ class ParticleDetector {
         /*=========================================================================*/
         /*
         * Gets recorded detections within given time period (beginning - end)
-        * @param beginning. Beginning of time period to get detections from.
-        * @param end. End of time period to get detections from.
+        * @param beginning. Beginning of time period in ms to get detections from.
+        * @param end. End of time period in ms to get detections from.
         * @return string displaying information about detections in given time period
         */
-        String getDetectionsPeriod(time_t beginning, time_t end);
+        std::string getDetectionsPeriod(unsigned long beginning, unsigned long end);
         /*=========================================================================*/
         /*
         * Gets Detection from detection's index in recordedDetections
@@ -97,9 +133,9 @@ class ParticleDetector {
         double getTimeSinceLastDetection();
         /*=========================================================================*/
         /*
-        * Gets average detections per minute starting with first detection.
+        * Gets average detections per minute starting with program runtime start
         * Skips detections in the current time's minute.
-        * @return average as double
+        * @return average as float
         */
         float getDetectionsPerMin();
         /*=========================================================================*/
@@ -119,12 +155,14 @@ class ParticleDetector {
         /*=========================================================================*/
         /*
         * Clears the vector recordedDetections and returns a copy of that vector before clear
+        * Use returnRecordedDetections() to preserve recordedDetections before use
         * @return vector of Detection objects
         */
-        std::vector<ParticleDetector::Detection> clearRecordedDetections();
+        void clearRecordedDetections();
         /*=========================================================================*/
         /*
         * returns the current Delta time
+        * Use returnRecordedDetections() to preserve recordedDetections before use
         * @return currentDelta
         */
         unsigned int checkDelta();
