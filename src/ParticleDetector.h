@@ -24,6 +24,7 @@
 #include <string>
 #include <elapsedMillis.h>
 #include <Ticker.h>
+
 //#include <TimerThree.h> //dependency
 
 //NOTES for lily
@@ -45,7 +46,12 @@ class ParticleDetector {
             elapsedMillis time; 
             uint16_t magnitude;
         };
-        
+        /*=========================================================================*/
+        //counter for recordedDetections array
+        uint8_t rDetectCounter; 
+        /*=========================================================================*/
+        //number of detections in recordedDetections
+        uint8_t rDetectSize; 
         /*=========================================================================*/
         //current data collection mode. This library handles 0: Individual and 1: Flux. Default is 1:Flux.
         uint8_t currentMode; 
@@ -65,7 +71,7 @@ class ParticleDetector {
         * vector may hold up to 3000 detections at a time
         * if container is at 3000 and detect() is called, the first detection in the vector is erased to make space
         */
-        std::vector<Detection> recordedDetections; 
+        Detection recordedDetections[100]; 
         
         /*=========================================================================*/
         /*
@@ -73,10 +79,11 @@ class ParticleDetector {
         * Call this before changing data collection modes or clearing recordedDetections to save vector data
         * @return current recordedDetection
         */
-        std::vector<ParticleDetector::Detection> returnRecordedDetections();
+        Detection * returnRecordedDetections();
         /*=========================================================================*/
+
     public:
-        Ticker tickerTimer;
+        
         /**
         * Constructor
         * Creates a new instance of ParticleDetector class.

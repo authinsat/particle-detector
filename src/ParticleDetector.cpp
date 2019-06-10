@@ -10,7 +10,7 @@
 
 
 #include "ParticleDetector.h"
-
+Ticker tickerTimer;
 
 ParticleDetector::ParticleDetector() {
     currentMode=1;
@@ -21,7 +21,9 @@ ParticleDetector::ParticleDetector() {
 bool ParticleDetector::setupSensor() {
     //test me
     if(true){
-        tickerTimer.attach_ms(currentDelta, ParticleDetector::detect);
+        //tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
+        rDetectSize = 0;
+        rDetectCounter = 0;
         ParticleDetector::startDetecting();
         return true;
     }
@@ -29,42 +31,60 @@ bool ParticleDetector::setupSensor() {
 }
 
 void ParticleDetector::startDetecting(){
-    tickerTimer.attach_ms(currentDelta, ParticleDetector::detect);
+    tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
     timerr = 0;
 }
 
 ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
-    return recordedDetections.at(desIndex);
+    return recordedDetections[desIndex];
 }
 
 void ParticleDetector::detect(){
+    // Serial.println("size of recordedDetections");
+    // Serial.println(rDetectSize);
+    // Serial.println("rDetectCounter");
+    // Serial.println(rDetectCounter);
+    // Serial.println("----------------------------------im detecting");
     ParticleDetector::Detection newDetection;
     newDetection.time = timerr; 
     newDetection.magnitude = 3.367;
-    while(recordedDetections.size()>=3000){
-        recordedDetections.erase(recordedDetections.begin());
+    rDetectCounter++;
+    if(rDetectCounter>20){
+        rDetectCounter = 0;
+        rDetectSize--;
+        //Serial.println("greater than 20");
     }
-    recordedDetections.push_back(newDetection);
+    recordedDetections[rDetectCounter] = newDetection;
+    if(rDetectSize>=20){
+        rDetectSize=20;
+    }
+    else{
+        rDetectSize++;
+    }  
+    
+    //Serial.println("----------------------------------end of detect");
 }
 
 void ParticleDetector::clearRecordedDetections(){
-    std::vector<ParticleDetector::Detection> recordedDetectionsCopy = recordedDetections;
-    recordedDetections.clear();
+    //std::vector<ParticleDetector::Detection> recordedDetectionsCopy = recordedDetections;
+    rDetectSize = 0;
+    rDetectCounter = 0;
+    
 }
 
 double  ParticleDetector::getTimeSinceLastDetection() {
     unsigned long current_time;
     current_time = time(NULL);
-    return difftime(recordedDetections.back().time,current_time);
+    return (recordedDetections[rDetectSize].time,current_time);
 }
-std::vector<ParticleDetector::Detection> ParticleDetector::returnRecordedDetections(){
+ParticleDetector::Detection * ParticleDetector::returnRecordedDetections(){
     return recordedDetections;
 }
 void ParticleDetector::setDataMode(uint8_t mode, unsigned int delta){
     if(currentDelta!=delta){
         currentDelta = delta;
         ParticleDetector::clearRecordedDetections();
-        tickerTimer.attach_ms(currentDelta, ParticleDetector::detect);
+        tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
 
     }
     
@@ -72,7 +92,7 @@ void ParticleDetector::setDataMode(uint8_t mode, unsigned int delta){
         currentMode = mode;
         ParticleDetector::clearRecordedDetections();
         if(mode==1){
-            tickerTimer.attach_ms(currentDelta, ParticleDetector::detect);
+            tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
         }
         else{
             tickerTimer.detach();
@@ -89,25 +109,25 @@ uint8_t ParticleDetector::checkMode(){
 
 float  ParticleDetector::getDetectionsPerMin() {
     int perMin = millis()/60; 
-    float averageRet = recordedDetections.size()/perMin;
+    float averageRet = rDetectSize/perMin;
     return averageRet;
 }
 
 float  ParticleDetector::getAvgTimeBetweenDetections() {
-    int cSize = recordedDetections.size()-1;
+    int cSize = rDetectSize-1;
     float counting = 0;
     for(int i=1; i<=cSize; i++){
-        counting+=recordedDetections.at(i).time-recordedDetections.at(i-1).time;
+        counting+=recordedDetections[i].time-recordedDetections[i-1].time;
     }
     float average = counting/cSize; 
     return average;
 }
 
 float  ParticleDetector::getAvgMagnitude() {
-    int cSize = recordedDetections.size();
+    int cSize = rDetectSize;
     float counting = 0;
     for(int i=0; i<=cSize; i++){
-        counting+=recordedDetections.at(i).magnitude;
+        counting+=recordedDetections[i].magnitude;
     }
     float average = counting/cSize; 
     return average;
@@ -116,13 +136,13 @@ float  ParticleDetector::getAvgMagnitude() {
 std::string ParticleDetector::getDetectionsPeriod(unsigned long beginning, unsigned long end) {
     std::string returnString = "";
     int counter = 0;
-    while(recordedDetections.at(counter).time>beginning){
+    while(recordedDetections[counter].time>beginning){
         counter++;
     }
-    while((recordedDetections.at(counter).time)<=end){
+    while((recordedDetections[counter].time)<=end){
         char msg[200];
-        unsigned long noUseCaseBecauseWHYWOULDYOU = recordedDetections.at(counter).time;
-        sprintf(msg,"Detection: %d \nTime Recorded: %d \nMagnitude: %d \n",counter,noUseCaseBecauseWHYWOULDYOU,recordedDetections.at(counter).magnitude);
+        unsigned long noUseCaseBecauseWHYWOULDYOU = recordedDetections[counter].time;
+        sprintf(msg,"Detection: %d \nTime Recorded: %d \nMagnitude: %d \n",counter,noUseCaseBecauseWHYWOULDYOU,recordedDetections[counter].magnitude);
         returnString+=msg;
         counter++;
         }
