@@ -24,6 +24,7 @@
 #include <string>
 #include <elapsedMillis.h>
 #include <Ticker.h>
+#include <iostream>
 
 //#include <TimerThree.h> //dependency
 
@@ -43,15 +44,15 @@ class ParticleDetector {
         * magnitude: magnitude of detection as recorded by sensor
         */
         struct Detection {
-            elapsedMillis time; 
+            unsigned long time; 
             uint16_t magnitude;
-        };
+            };
         /*=========================================================================*/
         //counter for recordedDetections array
-        uint8_t rDetectCounter; 
+        int rDetectCounter; 
         /*=========================================================================*/
         //number of detections in recordedDetections
-        uint8_t rDetectSize; 
+        int rDetectSize; 
         /*=========================================================================*/
         //current data collection mode. This library handles 0: Individual and 1: Flux. Default is 1:Flux.
         uint8_t currentMode; 
@@ -68,10 +69,10 @@ class ParticleDetector {
         /*=========================================================================*/
         /* Dynamically sized vector of detection objects
         * new detections are added to this vector
-        * vector may hold up to 3000 detections at a time
-        * if container is at 3000 and detect() is called, the first detection in the vector is erased to make space
+        * vector may hold up to 1000 detections at a time
+        * if container is at 1000 and detect() is called, the first detection in the vector is erased to make space
         */
-        Detection recordedDetections[100]; 
+        Detection recordedDetections[1000]; 
         
         /*=========================================================================*/
         /*
@@ -83,7 +84,7 @@ class ParticleDetector {
         /*=========================================================================*/
 
     public:
-        
+        //friend std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& c);
         /**
         * Constructor
         * Creates a new instance of ParticleDetector class.
@@ -144,7 +145,7 @@ class ParticleDetector {
         * Skips detections in the current time's minute.
         * @return average as float
         */
-        float getDetectionsPerMin();
+        unsigned long getDetectionsPerMin();
         /*=========================================================================*/
         /*
         * Gets average time in seconds between detections.
