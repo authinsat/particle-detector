@@ -24,7 +24,6 @@
 #include <string>
 #include <elapsedMillis.h>
 #include <Ticker.h>
-#include <iostream>
 
 //#include <TimerThree.h> //dependency
 
@@ -44,7 +43,7 @@ class ParticleDetector {
         * magnitude: magnitude of detection as recorded by sensor
         */
         struct Detection {
-            unsigned long time; 
+            unsigned long time;
             uint16_t magnitude;
             };
         /*=========================================================================*/
@@ -84,8 +83,8 @@ class ParticleDetector {
         /*=========================================================================*/
 
     public:
-        //friend std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& c);
-        /**
+        /*friend std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& c);*/
+        /*
         * Constructor
         * Creates a new instance of ParticleDetector class.
         */  

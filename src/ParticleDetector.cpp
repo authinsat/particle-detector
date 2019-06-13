@@ -16,7 +16,6 @@ ParticleDetector::ParticleDetector() {
     currentDelta=10;
 
 }
-//HERE_---------------_
 bool ParticleDetector::setupSensor() {
     //test me
     if(true){
@@ -68,15 +67,16 @@ double  ParticleDetector::getTimeSinceLastDetection() {
     current_time = time(NULL);
     return (recordedDetections[rDetectSize].time,current_time);
 }
+
 ParticleDetector::Detection * ParticleDetector::returnRecordedDetections(){
     return recordedDetections;
 }
+
 void ParticleDetector::setDataMode(uint8_t mode, unsigned int delta){
     if(currentDelta!=delta){
         currentDelta = delta;
         ParticleDetector::clearRecordedDetections();
         tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
-
     }
     
     if(mode!=currentMode){
