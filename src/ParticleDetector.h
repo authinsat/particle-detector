@@ -24,6 +24,7 @@
 #include <string>
 #include <elapsedMillis.h>
 #include <Ticker.h>
+//#include <iostream>
 
 //#include <TimerThree.h> //dependency
 
@@ -42,10 +43,13 @@ class ParticleDetector {
         * time: milliseconds since last time startDetecting() was called
         * magnitude: magnitude of detection as recorded by sensor
         */
-        struct Detection {
+         struct Detection {
             unsigned long time;
             uint16_t magnitude;
             };
+
+
+
         /*=========================================================================*/
         //counter for recordedDetections array
         int rDetectCounter; 
@@ -82,8 +86,11 @@ class ParticleDetector {
         Detection * returnRecordedDetections();
         /*=========================================================================*/
 
+
     public:
-        /*friend std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& c);*/
+        friend std::ostream& operator<<(std::ostream& cout, const ParticleDetector::Detection &ptr);
+            //const ParticleDetector::Detection *ptr);
+
         /*
         * Constructor
         * Creates a new instance of ParticleDetector class.

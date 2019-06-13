@@ -78,7 +78,7 @@ void ParticleDetector::setDataMode(uint8_t mode, unsigned int delta){
         ParticleDetector::clearRecordedDetections();
         tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
     }
-    
+
     if(mode!=currentMode){
         currentMode = mode;
         ParticleDetector::clearRecordedDetections();
@@ -154,10 +154,14 @@ std::string ParticleDetector::getDetectionsPeriod(unsigned long beginning, unsig
     return returnString;
 } 
 
-// std::ostream& operator<<(std::ostream &out, const ParticleDetector::Detection &c)
-// {
-//     //out << c.real;
-//     out << c.magnitude;
-//     return out;
-// }
+std::ostream& operator<<(std::ostream &cout, const ParticleDetector::Detection &ptr){
+    //out << (*ptr).magnitude;
+    //cout << "test" <<ptr.magnitude;
+    //cout << "test";
+    // cout << ptr.magnitude;
+    //cout << ptr.*magnitude;   //member selection through pointer to member
+    //uint16_t test = (*ptr).magnitude;
+    //cout << test;
+    return cout;
+}
 
