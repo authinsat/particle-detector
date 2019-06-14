@@ -1,197 +1,215 @@
 /*
 
-    This is a library for a particle detector
-
-    Functions include
-    -      I2C communication
-    -      Set data collection mode (individual (True) or flux(False))
+    This is a library for a particle detector 
+    
+    The board uses I2C for communication.
+    
+    The board communicates with [?] I2C devices:
 
 */
 
+#ifndef ParticleDetector_h
+#define ParticleDetector_h
 
-#include "ParticleDetector.h"
-Ticker tickerTimer;
+#pragma once
 
-ParticleDetector::ParticleDetector() {
-    currentMode=1;
-    currentDelta=10;
+// System Includes
+#include "xCore.h"
+#include <Arduino.h>
+#include "inttypes.h"
+#include "Wire.h"
+#include "xCore.h"
+#include "math.h"
+#include <vector>
+#include <string>
+#include <elapsedMillis.h>
+#include <Ticker.h>
+//#include <iostream>
 
-}
+//#include <TimerThree.h> //dependency
 
-
-bool ParticleDetector::setupSensor() {
-    //test me
-    if(true){
-        //tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
-        rDetectSize = 0;
-        rDetectCounter = 0;
-        ParticleDetector::startDetecting();
-        return true;
-    }
-    if(false){return false;}
-}
-
-//CHECKED
-void ParticleDetector::startDetecting(){
-    tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
-    timerr = 0;
-}
+//NOTES for lily
+//delta ms delta t individual interrupt
+//A2 magnitude sensor
+//setupSensor
 
 
-ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
-    return recordedDetections[desIndex];
-}
+/*=========================================================================*/
+ 
+class ParticleDetector{
+    private:
+        /*=========================================================================*/
+        /* struct container for Detection object 
+        * time: milliseconds since last time startDetecting() was called
+        * magnitude: magnitude of detection as recorded by sensor
+        */
+        //template<typename T>
+         struct Detection{       //: public Printable  {
+            unsigned long time;
+            uint16_t magnitude;
+            // char theMessage[25];
+            // Printer(ParticleDetector::Detection detectObj);
+            // size_t printTo(Print&) const;  
+            //Detection operator<<();
+            };
 
-void ParticleDetector::printDetection(int desIndex){
-    ParticleDetector::Printer zero(getDetection(desIndex));
-    Serial.println(zero);
-}
 
 
-//ParticleDetector::Printer zero(PD.getDetection(0));
-//CHECKED
-void ParticleDetector::detect(){
-    ParticleDetector::Detection newDetection;
-    newDetection.time = timerr;
-    newDetection.magnitude = 4;
-    rDetectCounter++;
-    if(rDetectCounter>999){
-        rDetectCounter = 0;
-        rDetectSize--;
-    }
-    recordedDetections[rDetectCounter] = newDetection;
-    if(rDetectSize>=1000){
-        rDetectSize=1000;
-    }
-    else{
-        rDetectSize++;
-    }  
-    
-}
-
-void ParticleDetector::clearRecordedDetections(){
-    rDetectSize = 0;
-    rDetectCounter = 0;
-    
-}
-
-//CHECKED
-double  ParticleDetector::getTimeSinceLastDetection() {
-    return (timerr-recordedDetections[rDetectCounter].time);
-}
-
-//CHECKED
-ParticleDetector::Detection * ParticleDetector::returnRecordedDetections(){
-    return recordedDetections;
-}
-
-//CHECKED
-void ParticleDetector::setDataMode(uint8_t mode, unsigned int delta){
-    if(currentDelta!=delta){
-        currentDelta = delta;
-        ParticleDetector::clearRecordedDetections();
-        tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
-    }
-
-    if(mode!=currentMode){
-        currentMode = mode;
-        ParticleDetector::clearRecordedDetections();
-        if(mode==1){
-            tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
-        }
-        else{
-            tickerTimer.detach();
-        }
+        /*=========================================================================*/
+        //counter for recordedDetections array
+        int rDetectCounter; 
+        /*=========================================================================*/
+        //number of detections in recordedDetections
+        int rDetectSize; 
+        /*=========================================================================*/
+        //current data collection mode. This library handles 0: Individual and 1: Flux. Default is 1:Flux.
+        uint8_t currentMode; 
         
-    }
-}
-
-//CHECKED
-unsigned int ParticleDetector::checkDelta(){
-    return currentDelta;
-}
-
-//CHECKED
-uint8_t ParticleDetector::checkMode(){
-    return currentMode;
-}
-
-//CHECKED
-unsigned long  ParticleDetector::getDetectionsPerMin() {
-    float minutesProRun;
-    if(rDetectCounter==999){
-        minutesProRun = (timerr-(recordedDetections[0].time))/60000.0;
-    }
-    else{
-        minutesProRun = (timerr-(recordedDetections[rDetectCounter+1].time))/60000.0;
-    }
-    float averageRet = rDetectSize/minutesProRun;
-    return averageRet;
-}
-//CHECKED
-float  ParticleDetector::getAvgTimeBetweenDetections() {
-    int cSize = rDetectSize;
-    float counting = 0;
-    for(int i=0; i<cSize-1; i++){
-        if(i!=rDetectCounter){
-            counting+=(recordedDetections[i+1].time-recordedDetections[i].time);
-        }
-    }
-    float average = counting/cSize; 
-    return average;
-}
-
-//CHECKED
-float  ParticleDetector::getAvgMagnitude() {
-    float cSize = rDetectSize;
-    float counting = 0;
-    for(int i=0; i<cSize; i++){
-        counting+=recordedDetections[i].magnitude;
-    }
-    float average = counting/cSize; 
-    return average;
-}
-
-std::string ParticleDetector::getDetectionsPeriod(unsigned long beginning, unsigned long end) {
-    std::string returnString = "";
-    int counter = 0;
-    while(recordedDetections[counter].time>beginning){
-        counter++;
-    }
-    while((recordedDetections[counter].time)<=end){
-        char msg[200];
-        unsigned long noUseCaseBecauseWHYWOULDYOU = recordedDetections[counter].time;
-        sprintf(msg,"Detection: %d \nTime Recorded: %d \nMagnitude: %d \n",counter,noUseCaseBecauseWHYWOULDYOU,recordedDetections[counter].magnitude);
-        returnString+=msg;
-        counter++;
-        }
-    return returnString;
-} 
-//template<typename T>
-// std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& ptr){
-//     //out << (*ptr).magnitude;
-//     //cout << "test" <<ptr.magnitude;
-//     std::string test = "test";
-//     out << test;
-//     // cout << ptr.magnitude;
-//     //cout << ptr.*magnitude;   //member selection through pointer to member
-//     //uint16_t test = (*ptr).magnitude;
-//     //return out << ptr.magnitude;
-//     return out;
-// }
-
-// std::ostream& operator<<(std::ostream& os, const ParticleDetector::Detection& a)
-// {
-//   return os << std::to_string(a.magnitude);
+        /*=========================================================================*/
+        //time in ms since last time startDetecting() was called
+        elapsedMillis timerr; 
+        
+        /*=========================================================================*/
+        /* struct container for Detection object
+        */
+        unsigned int currentDelta; //current delta time if currentMode is 1:flux
+       
+        /*=========================================================================*/
+        /* Dynamically sized vector of detection objects
+        * new detections are added to this vector
+        * vector may hold up to 1000 detections at a time
+        * if container is at 1000 and detect() is called, the first detection in the vector is erased to make space
+        */
+        //template<typename T>
+        Detection recordedDetections[1000]; 
+        
+        /*=========================================================================*/
+        /*
+        * Allows save of entire recordedDetections vector
+        * Call this before changing data collection modes or clearing recordedDetections to save vector data
+        * @return current recordedDetection
+        */
+        Detection * returnRecordedDetections();
+        /*=========================================================================*/
 
 
-ParticleDetector::Printer::Printer(ParticleDetector::Detection detectObj){
-    strcpy(theMessage, "Nothingness");
-}
+    public:
+        //friend std::ostream& operator<<(std::ostream&, ParticleDetector::Detection&);
+        //template<typename T>
+        friend std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& ptr);
+            //const ParticleDetector::Detection *ptr);
+
+        /*
+        * Constructor
+        * Creates a new instance of ParticleDetector class.
+        */  
+        ParticleDetector();
+       /*=========================================================================*/
+        /*
+        * Sets up the sensor
+        * Call this in setup(), before reading any sensor data.
+        * @return true if setup was successful
+        */
+        bool setupSensor();
+        /*=========================================================================*/
+        /*
+        * Awakes the sensor to start taking detections
+        * Called in setupSensor in flux mode with default delta time of 10
+        * @return none
+        */
+        void startDetecting();
+        /*=========================================================================*/
+        /*
+        * Sets Particle Sensor data collection mode
+        * @param mode. uint8_t value of desired data collection mode. This library handles 0: Individual and 1: Flux.
+        * @param delta. desired delta time between data collections in seconds if data collection mode is 1: Flux. Required if mode is 1: Flux. Default argument = 0.
+        * @return none
+        */
+        void setDataMode(uint8_t mode, unsigned int delta=10);
+        /*=========================================================================*/
+        /*
+        * Takes detection measurement then pushes <Detection> object to vector recordedDetections 
+        * @return none
+        */
+        void detect();
+        /*=========================================================================*/
+        /*
+        * Gets recorded detections within given time period (beginning - end)
+        * @param beginning. Beginning of time period in ms to get detections from.
+        * @param end. End of time period in ms to get detections from.
+        * @return string displaying information about detections in given time period
+        */
+        std::string getDetectionsPeriod(unsigned long beginning, unsigned long end);
+        /*=========================================================================*/
+        /*
+        * Gets Detection from detection's index in recordedDetections
+        * @param desIndex. Desired index of detection
+        * @return desired detection as <Detection> object
+        */
+        ParticleDetector::Detection getDetection(int desIndex);
+        /*=========================================================================*/
+        /*
+        * Gets Detection from detection's index in recordedDetections
+        * @param desIndex. Desired index of detection
+        * @return desired detection as <Detection> object
+        */
+        void printDetection(int desIndex);
+         /*=========================================================================*/
+        /*
+        * Gets time since last detection (last Detection in recordedDetections vector)
+        * @return time since last detection in seconds as a double
+        */
+        double getTimeSinceLastDetection();
+        /*=========================================================================*/
+        /*
+        * Gets average detections per minute starting with program runtime start
+        * Skips detections in the current time's minute.
+        * @return average as float
+        */
+        unsigned long getDetectionsPerMin();
+        /*=========================================================================*/
+        /*
+        * Gets average time in seconds between detections.
+        * Includes all detections in recordedDetections
+        * @return average as float
+        */
+        float getAvgTimeBetweenDetections();
+        /*=========================================================================*/
+        /*
+        * Gets average magnitude of all detections.
+        * Includes all detections in recordedDetections
+        * @return average as float
+        */
+        float getAvgMagnitude();
+        /*=========================================================================*/
+        /*
+        * Clears the vector recordedDetections and returns a copy of that vector before clear
+        * Use returnRecordedDetections() to preserve recordedDetections before use
+        * @return vector of Detection objects
+        */
+        void clearRecordedDetections();
+        /*=========================================================================*/
+        /*
+        * returns the current Delta time
+        * Use returnRecordedDetections() to preserve recordedDetections before use
+        * @return currentDelta
+        */
+        unsigned int checkDelta();
+        /*=========================================================================*/
+        /*
+        * returns the current data collection mode
+        * @return currentMode
+        */
+        uint8_t checkMode();
+        /*=========================================================================*/
 
 
-size_t ParticleDetector::Printer::printTo(Print& p) const{
-  return p.print(theMessage);
-}
+  // char theMessage[25];
+
+  // void Printer(ParticleDetector::Detection detectObj);
+  // size_t printTo(Print&) const;  
 
 
+};
+
+#endif
