@@ -1,8 +1,20 @@
 #include <Ticker.h>
 #include <elapsedMillis.h>
+#include "Wire.h"
+#include "xCore.h"
+
+/*=========================================================================*/
+/*
+* Timer for flux mode
+*/
 Ticker tickerTimer;
+String whosAsking;
+/*=========================================================================*/
+
 void setup() {
-  // put your setup code here, to run once:
+   Wire.begin(8);                // join i2c bus with address #8
+   Wire.onReceive(receiveEvent); // register event
+   Wire.onRequest(requestEvent);
 
 }
 
@@ -11,6 +23,9 @@ void loop() {
 
 }
 
+/*=========================================================================*/
+/*------------------------------DETECTOR METHODS---------------------------*/
+/*=========================================================================*/
 
 /* struct container for Detection object 
 * time: milliseconds since last time startDetecting() was called
@@ -43,6 +58,19 @@ unsigned int currentDelta;
 * if container is at 1000 and detect() is called, detections overwrite starting at [0]
 */
 Detection recordedDetections[1000]; 
+/*=========================================================================*/
+/*
+* Awakes the sensor to start taking detections
+* Called in setupSensor in flux mode with default delta time of 10
+* @return none
+*/
+void setupSensorCounterpart(){
+    currentMode=1;
+    currentDelta=10;
+    rDetectSize = 0;
+    rDetectCounter = 0;
+    startDetecting();
+}
 /*=========================================================================*/
 /*
 * Awakes the sensor to start taking detections
@@ -109,9 +137,66 @@ void detect(){
 * Use returnRecordedDetections() to preserve recordedDetections before use
 * @return vector of Detection objects
 */
+
 void clearRecordedDetections(){
     rDetectSize = 0;
     rDetectCounter = 0;
     
+}
+/*=========================================================================*/
+/*
+* 
+*/
+void receiveEvent(int howMany) {
+  String instruction;
+  while (1 < Wire.available()) { // loop through all but the last
+    char c = Wire.read(); // receive byte as a character
+    instruction+=c;
+  }
+  int x = Wire.read();    // receive byte as an integer
+  instruction+=x;
+  whosAsking = instruction;
+}
+
+void requestEvent(){
+  if(!(whosAsking=="ask0")){
+    
+  }
+  else if(!(whosAsking=="ask1")){
+    
+  }
+  else if(!(whosAsking=="ask2")){
+    
+  }
+  else if(!(whosAsking=="ask3")){
+    
+  }
+  else if(!(whosAsking=="ask4")){
+    
+  }
+  else if(!(whosAsking=="ask5")){
+    
+  }
+  else if(!(whosAsking=="ask6")){
+    
+  }
+  else if(!(whosAsking=="ask7")){
+    
+  }
+  else if(!(whosAsking=="ask8")){
+    
+  }
+  else if(!(whosAsking=="ask9")){
+    
+  }
+  else if(!(whosAsking=="set0")){
+    
+  }
+  else if(!(whosAsking=="set1")){
+    
+  }
+  else{
+    
+  }
 }
 /*=========================================================================*/
