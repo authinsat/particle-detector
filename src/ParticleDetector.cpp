@@ -11,11 +11,14 @@
 
 #include "ParticleDetector.h"
 Ticker tickerTimer;
+
 ParticleDetector::ParticleDetector() {
     currentMode=1;
     currentDelta=10;
 
 }
+
+
 bool ParticleDetector::setupSensor() {
     //test me
     if(true){
@@ -28,15 +31,25 @@ bool ParticleDetector::setupSensor() {
     if(false){return false;}
 }
 
+//CHECKED
 void ParticleDetector::startDetecting(){
     tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
     timerr = 0;
 }
 
+
 ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     return recordedDetections[desIndex];
 }
 
+void ParticleDetector::printDetection(int desIndex){
+    ParticleDetector::Printer zero(getDetection(desIndex));
+    Serial.println(zero);
+}
+
+
+//ParticleDetector::Printer zero(PD.getDetection(0));
+//CHECKED
 void ParticleDetector::detect(){
     ParticleDetector::Detection newDetection;
     newDetection.time = timerr;
@@ -62,16 +75,17 @@ void ParticleDetector::clearRecordedDetections(){
     
 }
 
+//CHECKED
 double  ParticleDetector::getTimeSinceLastDetection() {
-    unsigned long current_time;
-    current_time = time(NULL);
-    return (recordedDetections[rDetectSize].time,current_time);
+    return (timerr-recordedDetections[rDetectCounter].time);
 }
 
+//CHECKED
 ParticleDetector::Detection * ParticleDetector::returnRecordedDetections(){
     return recordedDetections;
 }
 
+//CHECKED
 void ParticleDetector::setDataMode(uint8_t mode, unsigned int delta){
     if(currentDelta!=delta){
         currentDelta = delta;
@@ -153,15 +167,31 @@ std::string ParticleDetector::getDetectionsPeriod(unsigned long beginning, unsig
         }
     return returnString;
 } 
+//template<typename T>
+// std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& ptr){
+//     //out << (*ptr).magnitude;
+//     //cout << "test" <<ptr.magnitude;
+//     std::string test = "test";
+//     out << test;
+//     // cout << ptr.magnitude;
+//     //cout << ptr.*magnitude;   //member selection through pointer to member
+//     //uint16_t test = (*ptr).magnitude;
+//     //return out << ptr.magnitude;
+//     return out;
+// }
 
-std::ostream& operator<<(std::ostream &cout, const ParticleDetector::Detection &ptr){
-    //out << (*ptr).magnitude;
-    //cout << "test" <<ptr.magnitude;
-    //cout << "test";
-    // cout << ptr.magnitude;
-    //cout << ptr.*magnitude;   //member selection through pointer to member
-    //uint16_t test = (*ptr).magnitude;
-    //cout << test;
-    return cout;
+// std::ostream& operator<<(std::ostream& os, const ParticleDetector::Detection& a)
+// {
+//   return os << std::to_string(a.magnitude);
+
+
+ParticleDetector::Printer::Printer(ParticleDetector::Detection detectObj){
+    strcpy(theMessage, "Nothingness");
 }
+
+
+size_t ParticleDetector::Printer::printTo(Print& p) const{
+  return p.print(theMessage);
+}
+
 

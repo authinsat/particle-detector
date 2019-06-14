@@ -43,9 +43,11 @@ class ParticleDetector {
         * time: milliseconds since last time startDetecting() was called
         * magnitude: magnitude of detection as recorded by sensor
         */
+        //template<typename T>
          struct Detection {
             unsigned long time;
             uint16_t magnitude;
+            //Detection operator<<();
             };
 
 
@@ -75,6 +77,7 @@ class ParticleDetector {
         * vector may hold up to 1000 detections at a time
         * if container is at 1000 and detect() is called, the first detection in the vector is erased to make space
         */
+        //template<typename T>
         Detection recordedDetections[1000]; 
         
         /*=========================================================================*/
@@ -88,7 +91,9 @@ class ParticleDetector {
 
 
     public:
-        friend std::ostream& operator<<(std::ostream& cout, const ParticleDetector::Detection &ptr);
+        //friend std::ostream& operator<<(std::ostream&, ParticleDetector::Detection&);
+        //template<typename T>
+        friend std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& ptr);
             //const ParticleDetector::Detection *ptr);
 
         /*
@@ -141,6 +146,13 @@ class ParticleDetector {
         ParticleDetector::Detection getDetection(int desIndex);
         /*=========================================================================*/
         /*
+        * Gets Detection from detection's index in recordedDetections
+        * @param desIndex. Desired index of detection
+        * @return desired detection as <Detection> object
+        */
+        void printDetection(int desIndex);
+         /*=========================================================================*/
+        /*
         * Gets time since last detection (last Detection in recordedDetections vector)
         * @return time since last detection in seconds as a double
         */
@@ -190,7 +202,19 @@ class ParticleDetector {
 
 
 
+
+
+//https://forum.arduino.cc/index.php?topic=456569.0
+class Printer: public Printable {
+
+  public:
+
+  char theMessage[25];
+
+  Printer(ParticleDetector::Detection detectObj);
+  size_t printTo(Print&) const;  
 };
 
+};
 
 #endif
