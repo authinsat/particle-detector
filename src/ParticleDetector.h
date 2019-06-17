@@ -35,7 +35,7 @@
 
 
 /*=========================================================================*/
- 
+
 class ParticleDetector{
     private:
         /*=========================================================================*/
@@ -43,6 +43,10 @@ class ParticleDetector{
         * time: milliseconds since last time startDetecting() was called
         * magnitude: magnitude of detection as recorded by sensor
         */
+        struct Detection{
+            unsigned long time;
+            uint16_t magnitude;
+        };
         //template<typename T>
          // struct Detection{       //: public Printable  {
          //    unsigned long time;
@@ -90,7 +94,7 @@ class ParticleDetector{
         * @param end. End of time period in ms to get detections from.
         * @return string displaying information about detections in given time period
         */
-        std::string getDetectionsPeriod(unsigned long beginning, unsigned long end);
+        //std::string getDetectionsPeriod(unsigned long beginning, unsigned long end);
         /*=========================================================================*/
         /*
         * Gets Detection from detection's index in recordedDetections
@@ -162,5 +166,7 @@ class ParticleDetector{
 void receiveEvent(int howMany);
 
 };
+
+int particleDeviceAddress = 8;
 
 #endif

@@ -1,14 +1,18 @@
-#include <Ticker.h>
+#include <TimerThree.h>
 #include <elapsedMillis.h>
 #include "Wire.h"
 #include "xCore.h"
+#include <array>
 
 /*=========================================================================*/
 /*
 * Timer for flux mode
 */
-Ticker tickerTimer;
 String whosAsking;
+int getDetect;
+unsigned long beginning;
+unsigned long ending;
+
 /*=========================================================================*/
 
 void setup() {
@@ -78,7 +82,7 @@ void setupSensorCounterpart(){
 * @return none
 */
 void startDetecting(){
-    tickerTimer.attach_ms(currentDelta, detect);
+    Timer3.initialize(currentDelta);
     timerr = 0;
 }
 /*=========================================================================*/
@@ -92,17 +96,19 @@ void setDataMode(uint8_t mode, unsigned int delta){
     if(currentDelta!=delta){
         currentDelta = delta;
         clearRecordedDetections();
-        tickerTimer.attach_ms(currentDelta, detect);
+        Timer3.initialize(currentDelta);
     }
 
     if(mode!=currentMode){
         currentMode = mode;
         clearRecordedDetections();
         if(mode==1){
-            tickerTimer.attach_ms(currentDelta, detect);
+           interrupts();
+           Timer3.initialize(currentDelta);
+           Timer3.attachInterrupt(detect);
         }
         else{
-            tickerTimer.detach();
+            noInterrupts();
         }
         
     }
@@ -114,6 +120,7 @@ void setDataMode(uint8_t mode, unsigned int delta){
 * @return none
 */
 void detect(){
+    noInterrupts();
     Detection newDetection;
     newDetection.time = timerr;
     newDetection.magnitude = 4;
@@ -129,7 +136,7 @@ void detect(){
     else{
         rDetectSize++;
     }  
-    
+    interrupts();
 }
 /*=========================================================================*/
 /*
@@ -149,54 +156,98 @@ void clearRecordedDetections(){
 */
 void receiveEvent(int howMany) {
   String instruction;
+  char c;
   while (1 < Wire.available()) { // loop through all but the last
-    char c = Wire.read(); // receive byte as a character
+    c = Wire.read(); // receive byte as a character
     instruction+=c;
   }
+  if(c=="ask"){
   int x = Wire.read();    // receive byte as an integer
   instruction+=x;
   whosAsking = instruction;
+  }
+  else if (c=="get"){
+    whosAsking = "ask7";
+    getDetect = Wire.read();
+  }
+//  else if (c=="per"){
+//    
+//  }
 }
 
 void requestEvent(){
   if(!(whosAsking=="ask0")){
-    
+    //getTimeSinceLastDetection
+    double c = timerr-recordedDetections[rDetectCounter].time;
+    Wire.write(static_cast<byte>(c));
   }
   else if(!(whosAsking=="ask1")){
+    //returnRecordedDetections
+    for(int i = 0; i<recordedDetections.size();i++){
+      Wire.write(recordedDetections[i]);
+    }
     
   }
   else if(!(whosAsking=="ask2")){
-    
+    //checkDelta
+    Wire.write(currentDelta);
   }
   else if(!(whosAsking=="ask3")){
-    
+    //checkMode
+    Wire.write(currentMode);
   }
   else if(!(whosAsking=="ask4")){
-    
+    //getDetectionsPerMin
+    float minutesProRun;
+    if(rDetectCounter==999){
+        minutesProRun = (timerr-(recordedDetections[0].time))/60000.0;
+    }
+    else{
+        minutesProRun = (timerr-(recordedDetections[rDetectCounter+1].time))/60000.0;
+    }
+    float averageRet = rDetectSize/minutesProRun;
+    Wire.write(averageRet);
   }
   else if(!(whosAsking=="ask5")){
-    
+    //getAvgTimeBetweenDetections
+    int cSize = rDetectSize;
+    float counting = 0;
+    for(int i=0; i<cSize-1; i++){
+        if(i!=rDetectCounter){
+            counting+=(recordedDetections[i+1].time-recordedDetections[i].time);
+        }
+    }
+    float average = counting/cSize; 
+    Wire.write(average);
   }
   else if(!(whosAsking=="ask6")){
-    
+    //getAvgMagnitude
+    float cSize = rDetectSize;
+    float counting = 0;
+    for(int i=0; i<cSize; i++){
+        counting+=recordedDetections[i].magnitude;
+    }
+    float average = counting/cSize; 
+    Wire.write(average);
   }
   else if(!(whosAsking=="ask7")){
-    
+    //getDetection
+    Wire.write(recordedDetections[getDetect]);
   }
-  else if(!(whosAsking=="ask8")){
-    
-  }
-  else if(!(whosAsking=="ask9")){
-    
-  }
+//  else if(!(whosAsking=="ask8")){
+//    
+//  }
+//  else if(!(whosAsking=="ask9")){
+//    
+//  }
   else if(!(whosAsking=="set0")){
     
   }
   else if(!(whosAsking=="set1")){
     
   }
-  else{
-    
-  }
+//  else{
+//    
+//  }
 }
 /*=========================================================================*/

@@ -11,6 +11,8 @@
 
 #include "ParticleDetector.h"
 
+
+
 ParticleDetector::ParticleDetector() {
     // currentMode=1;
     // currentDelta=10;
@@ -23,7 +25,7 @@ bool ParticleDetector::setupSensor() {
     if(true){
         //tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
         Wire.begin();
-        Wire.onReceive([this](){ this->receiveEvent(); });
+        //Wire.onReceive([this](){ this->receiveEvent(5); });
         //
         //ParticleDetector::startDetecting();
         return true;
@@ -33,10 +35,6 @@ bool ParticleDetector::setupSensor() {
 
 
 
-
-ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
-    return recordedDetections[desIndex];
-}
 
 // void ParticleDetector::printDetection(int desIndex){
 //     ParticleDetector::Printer zero(getDetection(desIndex));
@@ -53,79 +51,111 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
 //     rDetectCounter = 0;
     
 // }
+ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
+    ParticleDetector::Detection c;
+    Wire.beginTransmission(particleDeviceAddress);
+    char transmit[] = "get";
+    transmit+=desIndex;
+    Wire.write(transmit);
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 8);
+    while (Wire.available()) {
+        c = Wire.read();
+    }
+    return c;
+}
 
-//CHECKED
 double  ParticleDetector::getTimeSinceLastDetection() {
-    return (timerr-recordedDetections[rDetectCounter].time);
+    double c;
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("ask0");
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 8);
+    while (Wire.available()) {
+        c = Wire.read();
+    }
+    return c;
 }
 
-//CHECKED
+
 ParticleDetector::Detection * ParticleDetector::returnRecordedDetections(){
-    return recordedDetections;
+    ParticleDetector::Detection c[1000];
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("ask1");
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 6000);
+    while (Wire.available()) { 
+        c = Wire.read();
+    }
+    return c;
 }
 
 
-//CHECKED
 unsigned int ParticleDetector::checkDelta(){
-    return currentDelta;
+    unsigned int c;
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("ask2");
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 4);
+    while (Wire.available()) { 
+        c = Wire.read();
+    }
+    return c;
 }
 
-//CHECKED
+
 uint8_t ParticleDetector::checkMode(){
-    return currentMode;
+    uint8_t c;
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("ask3");
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 1);
+    while (Wire.available()) { 
+        c = Wire.read();
+    }
+    return c;
 }
 
-//CHECKED
+
 unsigned long  ParticleDetector::getDetectionsPerMin() {
-    float minutesProRun;
-    if(rDetectCounter==999){
-        minutesProRun = (timerr-(recordedDetections[0].time))/60000.0;
+    unsigned long c;
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("ask4");
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 4);
+    while (Wire.available()) { 
+        c = Wire.read();
     }
-    else{
-        minutesProRun = (timerr-(recordedDetections[rDetectCounter+1].time))/60000.0;
-    }
-    float averageRet = rDetectSize/minutesProRun;
-    return averageRet;
+    return c;
 }
-//CHECKED
+
+
 float  ParticleDetector::getAvgTimeBetweenDetections() {
-    int cSize = rDetectSize;
-    float counting = 0;
-    for(int i=0; i<cSize-1; i++){
-        if(i!=rDetectCounter){
-            counting+=(recordedDetections[i+1].time-recordedDetections[i].time);
-        }
+    float c;
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("ask5");
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 4);
+    while (Wire.available()) { 
+        c = Wire.read();
     }
-    float average = counting/cSize; 
-    return average;
+    return c;
 }
 
-//CHECKED
+
 float  ParticleDetector::getAvgMagnitude() {
-    float cSize = rDetectSize;
-    float counting = 0;
-    for(int i=0; i<cSize; i++){
-        counting+=recordedDetections[i].magnitude;
+    float c;
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("ask6");
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 4);
+    while (Wire.available()) { 
+        c = Wire.read();
     }
-    float average = counting/cSize; 
-    return average;
+    return c;
 }
 
-std::string ParticleDetector::getDetectionsPeriod(unsigned long beginning, unsigned long end) {
-    std::string returnString = "";
-    int counter = 0;
-    while(recordedDetections[counter].time>beginning){
-        counter++;
-    }
-    while((recordedDetections[counter].time)<=end){
-        char msg[200];
-        unsigned long noUseCaseBecauseWHYWOULDYOU = recordedDetections[counter].time;
-        sprintf(msg,"Detection: %d \nTime Recorded: %d \nMagnitude: %d \n",counter,noUseCaseBecauseWHYWOULDYOU,recordedDetections[counter].magnitude);
-        returnString+=msg;
-        counter++;
-        }
-    return returnString;
-} 
+
 
 void ParticleDetector::receiveEvent(int howMany) {
   while (1 < Wire.available()) { // loop through all but the last
@@ -169,3 +199,22 @@ void ParticleDetector::receiveEvent(int howMany) {
 // }
 
 
+
+//------------------------------------------------------------------------
+//void setDataMode(uint8_t mode, unsigned int delta){
+//--------------------------------------------------------------------------
+// std::string ParticleDetector::getDetectionsPeriod(unsigned long beginning, unsigned long end) {
+//     std::string returnString = "";
+//     int counter = 0;
+//     while(recordedDetections[counter].time>beginning){
+//         counter++;
+//     }
+//     while((recordedDetections[counter].time)<=end){
+//         char msg[200];
+//         unsigned long noUseCaseBecauseWHYWOULDYOU = recordedDetections[counter].time;
+//         sprintf(msg,"Detection: %d \nTime Recorded: %d \nMagnitude: %d \n",counter,noUseCaseBecauseWHYWOULDYOU,recordedDetections[counter].magnitude);
+//         returnString+=msg;
+//         counter++;
+//         }
+//     return returnString;
+// } 
