@@ -11,11 +11,10 @@
 
 #include "ParticleDetector.h"
 
+int particleDeviceAddress = 8;
 
 
 ParticleDetector::ParticleDetector() {
-    // currentMode=1;
-    // currentDelta=10;
 
 }
 
@@ -34,125 +33,106 @@ bool ParticleDetector::setupSensor() {
 }
 
 
-
-
-// void ParticleDetector::printDetection(int desIndex){
-//     ParticleDetector::Printer zero(getDetection(desIndex));
-//     Serial.println(zero);
-// }
-
-
-//ParticleDetector::Printer zero(PD.getDetection(0));
-//CHECKED
-
-
 // void ParticleDetector::clearRecordedDetections(){
 //     rDetectSize = 0;
 //     rDetectCounter = 0;
     
 // }
 ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
-    ParticleDetector::Detection c;
+    unsigned long theTime;
+    uint16_t theMagnitude;
     Wire.beginTransmission(particleDeviceAddress);
     char transmit[] = "get";
-    transmit+=desIndex;
     Wire.write(transmit);
+    Wire.write(desIndex);
     Wire.endTransmission();
-    Wire.requestFrom(particleDeviceAddress, 8);
-    while (Wire.available()) {
-        c = Wire.read();
+    Wire.requestFrom(particleDeviceAddress, 6);
+    //4 time 2 mag
+    while (2 > Wire.available()) {
+        theTime = Wire.read();
     }
-    return c;
+    theMagnitude = Wire.read();
+    ParticleDetector::Detection myDetect;
+    myDetect.time = theTime;
+    myDetect.magnitude = theMagnitude;
+    return myDetect;
 }
 
 double  ParticleDetector::getTimeSinceLastDetection() {
-    double c;
+    double myTime;
     Wire.beginTransmission(particleDeviceAddress);
     Wire.write("ask0");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 8);
     while (Wire.available()) {
-        c = Wire.read();
+        myTime = Wire.read();
     }
-    return c;
-}
-
-
-ParticleDetector::Detection * ParticleDetector::returnRecordedDetections(){
-    ParticleDetector::Detection c[1000];
-    Wire.beginTransmission(particleDeviceAddress);
-    Wire.write("ask1");
-    Wire.endTransmission();
-    Wire.requestFrom(particleDeviceAddress, 6000);
-    while (Wire.available()) { 
-        c = Wire.read();
-    }
-    return c;
+    return myTime;
 }
 
 
 unsigned int ParticleDetector::checkDelta(){
-    unsigned int c;
+    unsigned int myDelta;
     Wire.beginTransmission(particleDeviceAddress);
     Wire.write("ask2");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 4);
     while (Wire.available()) { 
-        c = Wire.read();
+        myDelta = Wire.read();
     }
-    return c;
+    return myDelta;
 }
 
 
 uint8_t ParticleDetector::checkMode(){
-    uint8_t c;
+    uint8_t myMode;
     Wire.beginTransmission(particleDeviceAddress);
     Wire.write("ask3");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 1);
     while (Wire.available()) { 
-        c = Wire.read();
+        myMode = Wire.read();
     }
-    return c;
+    return myMode;
 }
 
 
 unsigned long  ParticleDetector::getDetectionsPerMin() {
-    unsigned long c;
+    unsigned long myPerMin;
     Wire.beginTransmission(particleDeviceAddress);
     Wire.write("ask4");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 4);
     while (Wire.available()) { 
-        c = Wire.read();
+        myPerMin = Wire.read();
     }
-    return c;
+    return myPerMin;
 }
 
 
 float  ParticleDetector::getAvgTimeBetweenDetections() {
-    float c;
+    float myAvgTime;
     Wire.beginTransmission(particleDeviceAddress);
     Wire.write("ask5");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 4);
     while (Wire.available()) { 
-        c = Wire.read();
+        myAvgTime = Wire.read();
     }
-    return c;
+    return myAvgTime;
 }
 
 
 float  ParticleDetector::getAvgMagnitude() {
-    float c;
+    float myAvgMag;
     Wire.beginTransmission(particleDeviceAddress);
     Wire.write("ask6");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 4);
     while (Wire.available()) { 
-        c = Wire.read();
+        myAvgMag = Wire.read();
     }
-    return c;
+    return myAvgMag;
 }
 
 
@@ -165,56 +145,3 @@ void ParticleDetector::receiveEvent(int howMany) {
   int x = Wire.read();    // receive byte as an integer
   Serial.println(x);         // print the integer
 }
-
-
-
-
-//template<typename T>
-// std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& ptr){
-//     //out << (*ptr).magnitude;
-//     //cout << "test" <<ptr.magnitude;
-//     std::string test = "test";
-//     out << test;
-//     // cout << ptr.magnitude;
-//     //cout << ptr.*magnitude;   //member selection through pointer to member
-//     //uint16_t test = (*ptr).magnitude;
-//     //return out << ptr.magnitude;
-//     return out;
-// }
-
-// std::ostream& operator<<(std::ostream& os, const ParticleDetector::Detection& a)
-// {
-//   return os << std::to_string(a.magnitude);
-
-// ParticleDetector::Detection::Printer(){
-//     strcpy(theMessage, "Nothingness2");
-// }
-// ParticleDetector::Detection::Printer(ParticleDetector::Detection detectObj){
-//     strcpy(theMessage, "Nothingness");
-// }
-
-
-// size_t ParticleDetector::Detection::printTo(Print& p) const{
-//   return p.print(theMessage);
-// }
-
-
-
-//------------------------------------------------------------------------
-//void setDataMode(uint8_t mode, unsigned int delta){
-//--------------------------------------------------------------------------
-// std::string ParticleDetector::getDetectionsPeriod(unsigned long beginning, unsigned long end) {
-//     std::string returnString = "";
-//     int counter = 0;
-//     while(recordedDetections[counter].time>beginning){
-//         counter++;
-//     }
-//     while((recordedDetections[counter].time)<=end){
-//         char msg[200];
-//         unsigned long noUseCaseBecauseWHYWOULDYOU = recordedDetections[counter].time;
-//         sprintf(msg,"Detection: %d \nTime Recorded: %d \nMagnitude: %d \n",counter,noUseCaseBecauseWHYWOULDYOU,recordedDetections[counter].magnitude);
-//         returnString+=msg;
-//         counter++;
-//         }
-//     return returnString;
-// } 

@@ -182,12 +182,11 @@ void requestEvent(){
     Wire.write(static_cast<byte>(c));
   }
   else if(!(whosAsking=="ask1")){
-    //returnRecordedDetections
-    for(int i = 0; i<recordedDetections.size();i++){
-      Wire.write(recordedDetections[i]);
+    //getDetection
+    Wire.write(recordedDetections[getDetect].time);
+    Wire.write(recordedDetections[getDetect].magnitude);
     }
     
-  }
   else if(!(whosAsking=="ask2")){
     //checkDelta
     Wire.write(currentDelta);
@@ -206,7 +205,7 @@ void requestEvent(){
         minutesProRun = (timerr-(recordedDetections[rDetectCounter+1].time))/60000.0;
     }
     float averageRet = rDetectSize/minutesProRun;
-    Wire.write(averageRet);
+    Wire.write(static_cast<byte>(averageRet));
   }
   else if(!(whosAsking=="ask5")){
     //getAvgTimeBetweenDetections
@@ -218,7 +217,7 @@ void requestEvent(){
         }
     }
     float average = counting/cSize; 
-    Wire.write(average);
+    Wire.write(static_cast<byte>(average));
   }
   else if(!(whosAsking=="ask6")){
     //getAvgMagnitude
@@ -228,12 +227,10 @@ void requestEvent(){
         counting+=recordedDetections[i].magnitude;
     }
     float average = counting/cSize; 
-    Wire.write(average);
+    Wire.write(static_cast<byte>(average));
   }
-  else if(!(whosAsking=="ask7")){
-    //getDetection
-    Wire.write(recordedDetections[getDetect]);
-  }
+//  else if(!(whosAsking=="ask7")){
+//  }
 //  else if(!(whosAsking=="ask8")){
 //    
 //  }

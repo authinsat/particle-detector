@@ -65,7 +65,7 @@ class ParticleDetector{
         * Call this before changing data collection modes or clearing recordedDetections to save vector data
         * @return current recordedDetection
         */
-        Detection * returnRecordedDetections();
+        //Detection * returnRecordedDetections();
         /*=========================================================================*/
 
 
@@ -167,6 +167,5 @@ void receiveEvent(int howMany);
 
 };
 
-int particleDeviceAddress = 8;
 
 #endif
