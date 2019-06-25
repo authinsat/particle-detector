@@ -24,6 +24,7 @@ bool ParticleDetector::setupSensor() {
     if(true){
         //tickerTimer.attach_ms(currentDelta, [this](){ this->detect(); });
         Wire.begin();
+
         //Wire.onReceive([this](){ this->receiveEvent(5); });
         //
         //ParticleDetector::startDetecting();
@@ -33,12 +34,8 @@ bool ParticleDetector::setupSensor() {
 }
 
 
-// void ParticleDetector::clearRecordedDetections(){
-//     rDetectSize = 0;
-//     rDetectCounter = 0;
-    
-// }
 ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
+    Serial.println("inside");
     unsigned long theTime;
     uint16_t theMagnitude;
     Wire.beginTransmission(particleDeviceAddress);
@@ -96,6 +93,25 @@ uint8_t ParticleDetector::checkMode(){
     return myMode;
 }
 
+bool changeMode(uint8_t mode, unsigned int delta){
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("set");
+    Wire.write(mode);
+    Wire.write(delta);
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 1);
+    bool checkMeMode = Wire.read();
+    return checkMeMode;
+}
+
+bool ParticleDetector::clearRecordedDetections(){
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("clr");
+    Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 1);
+    bool checkMeClear = Wire.read();
+    return checkMeClear;
+}
 
 unsigned long  ParticleDetector::getDetectionsPerMin() {
     unsigned long myPerMin;

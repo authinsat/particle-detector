@@ -12,6 +12,8 @@ String whosAsking;
 int getDetect;
 unsigned long beginning;
 unsigned long ending;
+uint8_t setMode;
+unsigned int setDelta;
 
 /*=========================================================================*/
 
@@ -19,6 +21,10 @@ void setup() {
    Wire.begin(8);                // join i2c bus with address #8
    Wire.onReceive(receiveEvent); // register event
    Wire.onRequest(requestEvent);
+   pinMode(13, OUTPUT);
+   Timer3.attachInterrupt(detect);
+   Serial.begin(115200);
+   startDetecting();
 
 }
 
@@ -54,7 +60,7 @@ uint8_t currentMode;
 elapsedMillis timerr;
 /*=========================================================================*/
 // current delta time if currentMode is 1:flux
-unsigned int currentDelta;
+unsigned int currentDelta=10;
 /*=========================================================================*/
 /* Array of detection objects
 * new detections are added to this vector
@@ -92,7 +98,7 @@ void startDetecting(){
 * @param delta. desired delta time between data collections in seconds if data collection mode is 1: Flux. Required if mode is 1: Flux. Default argument = 0.
 * @return none
 */
-void setDataMode(uint8_t mode, unsigned int delta){
+void setDataMode(uint8_t mode, unsigned int delta=10){
     if(currentDelta!=delta){
         currentDelta = delta;
         clearRecordedDetections();
@@ -155,6 +161,7 @@ void clearRecordedDetections(){
 * 
 */
 void receiveEvent(int howMany) {
+  Serial.println("receive");
   String instruction;
   char c;
   while (1 < Wire.available()) { // loop through all but the last
@@ -162,20 +169,28 @@ void receiveEvent(int howMany) {
     instruction+=c;
   }
   if(c=="ask"){
-  int x = Wire.read();    // receive byte as an integer
-  instruction+=x;
-  whosAsking = instruction;
+    int x = Wire.read();    // receive byte as an integer
+    instruction+=x;
+    whosAsking = instruction;
+  }
+  else if(c=="set"){
+    whosAsking = instruction;
+    while (4 < Wire.available()) {
+      setMode = Wire.read();
+    }
+    setDelta = Wire.read();
   }
   else if (c=="get"){
-    whosAsking = "ask7";
+    whosAsking = "ask1";
     getDetect = Wire.read();
   }
-//  else if (c=="per"){
-//    
-//  }
+  else if (c=="clr"){
+    whosAsking = instruction;
+  }
 }
 
 void requestEvent(){
+  Serial.println("request");
   if(!(whosAsking=="ask0")){
     //getTimeSinceLastDetection
     double c = timerr-recordedDetections[rDetectCounter].time;
@@ -229,22 +244,15 @@ void requestEvent(){
     float average = counting/cSize; 
     Wire.write(static_cast<byte>(average));
   }
-//  else if(!(whosAsking=="ask7")){
-//  }
-//  else if(!(whosAsking=="ask8")){
-//    
-//  }
-//  else if(!(whosAsking=="ask9")){
-//    
-//  }
-  else if(!(whosAsking=="set0")){
-    
+  else if(!(whosAsking=="set")){
+    setDataMode(setMode,setDelta);
+    Wire.write(true);
   }
-  else if(!(whosAsking=="set1")){
-    
+  else if(!(whosAsking=="clr")){
+    clearRecordedDetections();
+    Wire.write(true);
   }
-//  else{
-//    
-//  }
+  else{
+    Wire.write(false);
+  }
 }
-/*=========================================================================*/

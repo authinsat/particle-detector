@@ -43,10 +43,7 @@ class ParticleDetector{
         * time: milliseconds since last time startDetecting() was called
         * magnitude: magnitude of detection as recorded by sensor
         */
-        struct Detection{
-            unsigned long time;
-            uint16_t magnitude;
-        };
+
         //template<typename T>
          // struct Detection{       //: public Printable  {
          //    unsigned long time;
@@ -70,6 +67,10 @@ class ParticleDetector{
 
 
     public:
+        struct Detection{
+            unsigned long time;
+            uint16_t magnitude;
+        };
         //friend std::ostream& operator<<(std::ostream&, ParticleDetector::Detection&);
         //template<typename T>
         //friend std::ostream& operator<<(std::ostream& out, const ParticleDetector::Detection& ptr);
@@ -108,7 +109,7 @@ class ParticleDetector{
         * @param desIndex. Desired index of detection
         * @return desired detection as <Detection> object
         */
-        void printDetection(int desIndex);
+        //void printDetection(int desIndex);
          /*=========================================================================*/
         /*
         * Gets time since last detection (last Detection in recordedDetections vector)
@@ -142,7 +143,7 @@ class ParticleDetector{
         * Use returnRecordedDetections() to preserve recordedDetections before use
         * @return vector of Detection objects
         */
-        //void clearRecordedDetections();
+        bool clearRecordedDetections();
         /*=========================================================================*/
         /*
         * returns the current Delta time
@@ -156,6 +157,12 @@ class ParticleDetector{
         * @return currentMode
         */
         uint8_t checkMode();
+        /*=========================================================================*/
+        /*
+        * changes the current data collection mode and/or delta
+        * @return none
+        */
+        bool changeMode(uint8_t mode, unsigned int delta=10);
         /*=========================================================================*/
 
 
