@@ -35,23 +35,34 @@ bool ParticleDetector::setupSensor() {
 
 
 ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
-    Serial.println("inside");
     unsigned long theTime;
     uint16_t theMagnitude;
+    Wire.begin();
     Wire.beginTransmission(particleDeviceAddress);
     char transmit[] = "get";
     Wire.write(transmit);
     Wire.write(desIndex);
+    Serial.println("Before end");
     Wire.endTransmission();
+    Serial.println("After end");
+    //Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 6);
+    Serial.println("request from");
     //4 time 2 mag
-    while (2 > Wire.available()) {
+    int testme = 4;
+    Serial.println("wire available");
+    
+    while ((Wire.available())>2) {
+        Serial.println(Wire.available());
         theTime = Wire.read();
+        Serial.println("in while loop");
     }
     theMagnitude = Wire.read();
+    Serial.println("after read");
     ParticleDetector::Detection myDetect;
     myDetect.time = theTime;
     myDetect.magnitude = theMagnitude;
+    Serial.println("end");
     return myDetect;
 }
 

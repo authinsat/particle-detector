@@ -14,17 +14,32 @@ unsigned long beginning;
 unsigned long ending;
 uint8_t setMode;
 unsigned int setDelta;
+void receiveEvent(int howMany);
+void requestEvent();
+
+struct Detection{
+  unsigned long time;
+  uint16_t magnitude;
+};
+Detection recordedDetections[1000];
 
 /*=========================================================================*/
 
 void setup() {
-   Wire.begin(8);                // join i2c bus with address #8
-   Wire.onReceive(receiveEvent); // register event
+   Serial.begin(115200);
+   while(!Serial);
+   delay(2000);
+   Wire.begin(8);
+   Wire.onReceive(receiveEvent);
    Wire.onRequest(requestEvent);
    pinMode(13, OUTPUT);
    Timer3.attachInterrupt(detect);
-   Serial.begin(115200);
    startDetecting();
+   Detection test1;
+   test1.magnitude=3;
+   recordedDetections[0]=test1;
+   recordedDetections[1]=test1;
+   recordedDetections[2]=test1;
 
 }
 
@@ -41,10 +56,10 @@ void loop() {
 * time: milliseconds since last time startDetecting() was called
 * magnitude: magnitude of detection as recorded by sensor
 */
-struct Detection{
-  unsigned long time;
-  uint16_t magnitude;
-};
+//struct Detection{
+//  unsigned long time;
+//  uint16_t magnitude;
+//};
 
 /*=========================================================================*/
 //counter for recordedDetections array
@@ -67,7 +82,7 @@ unsigned int currentDelta=10;
 * array may hold up to 1000 detections at a time
 * if container is at 1000 and detect() is called, detections overwrite starting at [0]
 */
-Detection recordedDetections[1000]; 
+
 /*=========================================================================*/
 /*
 * Awakes the sensor to start taking detections
@@ -88,7 +103,7 @@ void setupSensorCounterpart(){
 * @return none
 */
 void startDetecting(){
-    Timer3.initialize(currentDelta);
+    //Timer3.initialize(currentDelta);
     timerr = 0;
 }
 /*=========================================================================*/
@@ -161,6 +176,7 @@ void clearRecordedDetections(){
 * 
 */
 void receiveEvent(int howMany) {
+  noInterrupts();
   Serial.println("receive");
   String instruction;
   char c;
@@ -187,9 +203,11 @@ void receiveEvent(int howMany) {
   else if (c=="clr"){
     whosAsking = instruction;
   }
+  interrupts();
 }
 
 void requestEvent(){
+  noInterrupts();
   Serial.println("request");
   if(!(whosAsking=="ask0")){
     //getTimeSinceLastDetection
@@ -255,4 +273,5 @@ void requestEvent(){
   else{
     Wire.write(false);
   }
+  interrupts();
 }
