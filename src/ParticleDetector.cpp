@@ -11,7 +11,7 @@
 
 #include "ParticleDetector.h"
 
-int particleDeviceAddress = 8;
+int particleDeviceAddress = 0x08;
 
 
 ParticleDetector::ParticleDetector() {
@@ -41,27 +41,37 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     Wire.beginTransmission(particleDeviceAddress);
     char transmit[] = "get";
     Wire.write(transmit);
-    Wire.write(desIndex);
-    Serial.println("Before end");
+    Wire.write(2);
+   // Serial.println("Before end");
     Wire.endTransmission();
     Serial.println("After end");
-    //Wire.endTransmission();
+    Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 6);
-    Serial.println("request from");
+    //Serial.println("request from");
     //4 time 2 mag
     int testme = 4;
-    Serial.println("wire available");
-    
-    while ((Wire.available())>2) {
-        Serial.println(Wire.available());
-        theTime = Wire.read();
-        Serial.println("in while loop");
+    //Serial.println("wire available");
+    //Serial.println(Wire.available());
+    //while ((Wire.available())>2) {
+        
+        //theTime+=Wire.read();
+        //Serial.println("inloo time");
+    Serial.println(Wire.available());
+    while(Wire.available()) { // slave may send less than requested
+        char c = Wire.read();   // receive a byte as character
+        Serial.print(c);
     }
-    theMagnitude = Wire.read();
-    Serial.println("after read");
+    //Serial.println(test2);
+
+        
+    //}
+   // Serial.println("theTime");
+    //Serial.println(theTime);
+   // theMagnitude = Wire.read();
+    //Serial.println("after read");
     ParticleDetector::Detection myDetect;
-    myDetect.time = theTime;
-    myDetect.magnitude = theMagnitude;
+    //myDetect.time = theTime;
+    //myDetect.magnitude = theMagnitude;
     Serial.println("end");
     return myDetect;
 }

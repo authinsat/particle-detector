@@ -8,7 +8,7 @@
 /*
 * Timer for flux mode
 */
-String whosAsking;
+char whosAsking[4] = "nooo";
 int getDetect;
 unsigned long beginning;
 unsigned long ending;
@@ -27,9 +27,10 @@ Detection recordedDetections[1000];
 
 void setup() {
    Serial.begin(115200);
-   while(!Serial);
+  // while(!Serial);
    delay(2000);
-   Wire.begin(8);
+  // Serial.println("setup");
+   Wire.begin(0x08);
    Wire.onReceive(receiveEvent);
    Wire.onRequest(requestEvent);
    pinMode(13, OUTPUT);
@@ -37,9 +38,11 @@ void setup() {
    startDetecting();
    Detection test1;
    test1.magnitude=3;
+   test1.time=2000;
    recordedDetections[0]=test1;
    recordedDetections[1]=test1;
    recordedDetections[2]=test1;
+   Serial.println(recordedDetections[0].magnitude);
 
 }
 
@@ -72,7 +75,7 @@ int rDetectSize;
 uint8_t currentMode; 
 /*=========================================================================*/
 //time in ms since last time startDetecting() was called
-elapsedMillis timerr;
+ elapsedMillis timerr;
 /*=========================================================================*/
 // current delta time if currentMode is 1:flux
 unsigned int currentDelta=10;
@@ -178,100 +181,104 @@ void clearRecordedDetections(){
 void receiveEvent(int howMany) {
   noInterrupts();
   Serial.println("receive");
-  String instruction;
+  char instruction[4];
   char c;
-  while (1 < Wire.available()) { // loop through all but the last
+  strcpy(whosAsking, "star");
+  int holding = 0;
+  while (holding<4) { // loop through all but the last
     c = Wire.read(); // receive byte as a character
-    instruction+=c;
+    instruction[holding]=c;
+    strcpy(whosAsking, instruction);
+    holding++;
   }
   if(c=="ask"){
     int x = Wire.read();    // receive byte as an integer
-    instruction+=x;
-    whosAsking = instruction;
+    instruction[holding] = x;
+    strcpy(whosAsking, instruction);
   }
   else if(c=="set"){
-    whosAsking = instruction;
+    strcpy(instruction, whosAsking);
     while (4 < Wire.available()) {
       setMode = Wire.read();
     }
     setDelta = Wire.read();
   }
-  else if (c=="get"){
-    whosAsking = "ask1";
+  else if (strcmp(instruction,"get") == 0){
+    strcpy(whosAsking,"ask1");
     getDetect = Wire.read();
   }
   else if (c=="clr"){
-    whosAsking = instruction;
+    strcpy(instruction, whosAsking);
   }
   interrupts();
 }
 
 void requestEvent(){
   noInterrupts();
-  Serial.println("request");
-  if(!(whosAsking=="ask0")){
-    //getTimeSinceLastDetection
-    double c = timerr-recordedDetections[rDetectCounter].time;
-    Wire.write(static_cast<byte>(c));
-  }
-  else if(!(whosAsking=="ask1")){
-    //getDetection
-    Wire.write(recordedDetections[getDetect].time);
-    Wire.write(recordedDetections[getDetect].magnitude);
-    }
-    
-  else if(!(whosAsking=="ask2")){
-    //checkDelta
-    Wire.write(currentDelta);
-  }
-  else if(!(whosAsking=="ask3")){
-    //checkMode
-    Wire.write(currentMode);
-  }
-  else if(!(whosAsking=="ask4")){
-    //getDetectionsPerMin
-    float minutesProRun;
-    if(rDetectCounter==999){
-        minutesProRun = (timerr-(recordedDetections[0].time))/60000.0;
-    }
-    else{
-        minutesProRun = (timerr-(recordedDetections[rDetectCounter+1].time))/60000.0;
-    }
-    float averageRet = rDetectSize/minutesProRun;
-    Wire.write(static_cast<byte>(averageRet));
-  }
-  else if(!(whosAsking=="ask5")){
-    //getAvgTimeBetweenDetections
-    int cSize = rDetectSize;
-    float counting = 0;
-    for(int i=0; i<cSize-1; i++){
-        if(i!=rDetectCounter){
-            counting+=(recordedDetections[i+1].time-recordedDetections[i].time);
-        }
-    }
-    float average = counting/cSize; 
-    Wire.write(static_cast<byte>(average));
-  }
-  else if(!(whosAsking=="ask6")){
-    //getAvgMagnitude
-    float cSize = rDetectSize;
-    float counting = 0;
-    for(int i=0; i<cSize; i++){
-        counting+=recordedDetections[i].magnitude;
-    }
-    float average = counting/cSize; 
-    Wire.write(static_cast<byte>(average));
-  }
-  else if(!(whosAsking=="set")){
-    setDataMode(setMode,setDelta);
-    Wire.write(true);
-  }
-  else if(!(whosAsking=="clr")){
-    clearRecordedDetections();
-    Wire.write(true);
-  }
-  else{
-    Wire.write(false);
-  }
+  Wire.write(getDetect);
+//  if(!(whosAsking=="ask0")){
+//    //getTimeSinceLastDetection
+//    double c = timerr-recordedDetections[rDetectCounter].time;
+//    Wire.write(static_cast<byte>(c));
+//  }
+//  else if(!(whosAsking=="ask1")){
+//    //getDetection
+//    Wire.write(recordedDetections[getDetect].time);
+//    Wire.write(recordedDetections[getDetect].magnitude);
+//    }
+//    
+//  else if(!(whosAsking=="ask2")){
+//    //checkDelta
+//    Wire.write(currentDelta);
+//  }
+//  else if(!(whosAsking=="ask3")){
+//    //checkMode
+//    Wire.write(currentMode);
+//  }
+//  else if(!(whosAsking=="ask4")){
+//    //getDetectionsPerMin
+//    float minutesProRun;
+//    if(rDetectCounter==999){
+//        minutesProRun = (timerr-(recordedDetections[0].time))/60000.0;
+//    }
+//    else{
+//        minutesProRun = (timerr-(recordedDetections[rDetectCounter+1].time))/60000.0;
+//    }
+//    float averageRet = rDetectSize/minutesProRun;
+//    Wire.write(static_cast<byte>(averageRet));
+//  }
+//  else if(!(whosAsking=="ask5")){
+//    //getAvgTimeBetweenDetections
+//    int cSize = rDetectSize;
+//    float counting = 0;
+//    for(int i=0; i<cSize-1; i++){
+//        if(i!=rDetectCounter){
+//            counting+=(recordedDetections[i+1].time-recordedDetections[i].time);
+//        }
+//    }
+//    float average = counting/cSize; 
+//    Wire.write(static_cast<byte>(average));
+//  }
+//  else if(!(whosAsking=="ask6")){
+//    //getAvgMagnitude
+//    float cSize = rDetectSize;
+//    float counting = 0;
+//    for(int i=0; i<cSize; i++){
+//        counting+=recordedDetections[i].magnitude;
+//    }
+//    float average = counting/cSize; 
+//    Wire.write(static_cast<byte>(average));
+//  }
+//  else if(!(whosAsking=="set")){
+//    setDataMode(setMode,setDelta);
+//    Wire.write(true);
+//  }
+//  else if(!(whosAsking=="clr")){
+//    clearRecordedDetections();
+//    Wire.write(true);
+//  }
+//  else{
+//    Wire.write(false);
+//  }
   interrupts();
 }
