@@ -41,7 +41,7 @@ void setup() {
    recordedDetections[0]=test1;
    recordedDetections[1]=test1;
    recordedDetections[2]=test1;
-   Serial.println(recordedDetections[0].magnitude);
+   //Serial.println(recordedDetections[0].magnitude);
 
 }
 
@@ -179,59 +179,74 @@ void clearRecordedDetections(){
 */
 void receiveEvent(int howMany) {
   noInterrupts();
-  //getDetect=500;
   char instruction[4];
   char c;
-  strcpy(whosAsking, "star");
   int holding = 0;
-  while (holding<4) { // loop through all but the last
+  while(Wire.available()) {  // loop through all but the last
     c = Wire.read(); // receive byte as a character
     instruction[holding]=c;
     holding++;
   }
-  strcpy(whosAsking, instruction);
-  if(c=="ask"){
-    int x = Wire.read();    // receive byte as an integer
-    instruction[holding] = x;
-    strcpy(whosAsking, instruction);
-  }
-  else if(c=="set"){
-    strcpy(instruction, whosAsking);
-    while (4 < Wire.available()) {
-      setMode = Wire.read();
-    }
-    setDelta = Wire.read();
-  }
-  else if (strcmp(instruction,"get") == 0){
-      //strcpy(whosAsking,"ask1");
+  instruction[holding]="e";
+//  //getDetect=500;
+
+//  strcpy(whosAsking, "star");
+//  int holding = 0;
+//  while (holding<4) { // read first 3 bytes
+//    c = Wire.read(); // receive byte as a character
+//    instruction[holding]=c;
+//    holding++;
+//  }
+//  //strcpy(whosAsking, instruction);
+//  if(c=="ask"){
+//    int x = Wire.read();    // receive byte as an integer
+//    instruction[holding] = x;
+strcpy(whosAsking, instruction);
+//  }
+//  else if(c=="set"){
+//    strcpy(instruction, whosAsking);
+//    while (4 < Wire.available()) {
+//      setMode = Wire.read();
+//    }
+//    setDelta = Wire.read();
+//  }
+//  else if (strcmp(instruction,"get") == 0){
+//      strcpy(whosAsking,"ask1");
 //    byte bytes[4];
 //    bytes[0] = Wire.read();
 //    bytes[1] = Wire.read();
 //    bytes[2] = Wire.read();
 //    bytes[3] = Wire.read();
-    //getDetect = bytes[0] | ( (int)bytes[1] << 8 ) | ( (int)bytes[2] << 16 ) | ( (int)bytes[3] << 24 );
-    //getDetect = 600;
-     getDetect = 500;
-  }
-  else if (c=="clr"){
-    strcpy(instruction, whosAsking);
-  }
+//    getDetect = bytes[0] | ( (int)bytes[1] << 8 ) | ( (int)bytes[2] << 16 ) | ( (int)bytes[3] << 24 );
+//    //getDetect = 600;
+//     getDetect = 500;
+//  }
+//  else if (c=="clr"){
+//    strcpy(instruction, whosAsking);
+//  }
   
   interrupts();
 }
 
 void requestEvent(){
     noInterrupts();
-    getDetect = 450;
-    byte bytes[4];
-    bytes[0] = getDetect & 255;
-    bytes[1] = (getDetect >> 8) & 255;
-    bytes[2] = (getDetect >> 16) & 255;
-    bytes[3] = (getDetect >> 24) & 255;
-    Wire.write(bytes[0]);
-    Wire.write(bytes[1]);
-    Wire.write(bytes[2]);
-    Wire.write(bytes[3]);
+//    getDetect = 450;
+//    byte bytes[4];
+//    bytes[0] = getDetect & 255;
+//    bytes[1] = (getDetect >> 8) & 255;
+//    bytes[2] = (getDetect >> 16) & 255;
+//    bytes[3] = (getDetect >> 24) & 255;
+//    Wire.write(bytes[0]);
+//    Wire.write(bytes[1]);
+//    Wire.write(bytes[2]);
+//    Wire.write(bytes[3]);
+//  for(int g = 0;g<5;g++){
+//    Wire.write(whosAsking[g]);
+//  }
+    Wire.write("w");
+    Wire.write("w");
+    Wire.write("w");
+    Wire.write("w");
     interrupts();
   //getDetect = 900;
   //-----------------------------
