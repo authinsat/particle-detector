@@ -3,13 +3,12 @@
 #include "Wire.h"
 #include "xCore.h"
 #include <array>
-
 /*=========================================================================*/
 /*
 * Timer for flux mode
 */
 char whosAsking[4] = "nooo";
-int getDetect;
+int getDetect=789;
 unsigned long beginning;
 unsigned long ending;
 uint8_t setMode;
@@ -180,7 +179,7 @@ void clearRecordedDetections(){
 */
 void receiveEvent(int howMany) {
   noInterrupts();
-  Serial.println("receive");
+  //getDetect=500;
   char instruction[4];
   char c;
   strcpy(whosAsking, "star");
@@ -188,9 +187,9 @@ void receiveEvent(int howMany) {
   while (holding<4) { // loop through all but the last
     c = Wire.read(); // receive byte as a character
     instruction[holding]=c;
-    strcpy(whosAsking, instruction);
     holding++;
   }
+  strcpy(whosAsking, instruction);
   if(c=="ask"){
     int x = Wire.read();    // receive byte as an integer
     instruction[holding] = x;
@@ -204,18 +203,42 @@ void receiveEvent(int howMany) {
     setDelta = Wire.read();
   }
   else if (strcmp(instruction,"get") == 0){
-    strcpy(whosAsking,"ask1");
-    getDetect = Wire.read();
+      //strcpy(whosAsking,"ask1");
+//    byte bytes[4];
+//    bytes[0] = Wire.read();
+//    bytes[1] = Wire.read();
+//    bytes[2] = Wire.read();
+//    bytes[3] = Wire.read();
+    //getDetect = bytes[0] | ( (int)bytes[1] << 8 ) | ( (int)bytes[2] << 16 ) | ( (int)bytes[3] << 24 );
+    //getDetect = 600;
+     getDetect = 500;
   }
   else if (c=="clr"){
     strcpy(instruction, whosAsking);
   }
+  
   interrupts();
 }
 
 void requestEvent(){
-  noInterrupts();
-  Wire.write(getDetect);
+    noInterrupts();
+    getDetect = 450;
+    byte bytes[4];
+    bytes[0] = getDetect & 255;
+    bytes[1] = (getDetect >> 8) & 255;
+    bytes[2] = (getDetect >> 16) & 255;
+    bytes[3] = (getDetect >> 24) & 255;
+    Wire.write(bytes[0]);
+    Wire.write(bytes[1]);
+    Wire.write(bytes[2]);
+    Wire.write(bytes[3]);
+    interrupts();
+  //getDetect = 900;
+  //-----------------------------
+
+  // }
+  //-----------------------------
+  
 //  if(!(whosAsking=="ask0")){
 //    //getTimeSinceLastDetection
 //    double c = timerr-recordedDetections[rDetectCounter].time;
@@ -223,10 +246,11 @@ void requestEvent(){
 //  }
 //  else if(!(whosAsking=="ask1")){
 //    //getDetection
-//    Wire.write(recordedDetections[getDetect].time);
-//    Wire.write(recordedDetections[getDetect].magnitude);
+//    //Wire.write(recordedDetections[getDetect].time);
+//    //Wire.write(recordedDetections[getDetect].magnitude);
+//    //getDetect = 567;
 //    }
-//    
+    
 //  else if(!(whosAsking=="ask2")){
 //    //checkDelta
 //    Wire.write(currentDelta);
@@ -280,5 +304,5 @@ void requestEvent(){
 //  else{
 //    Wire.write(false);
 //  }
-  interrupts();
+
 }

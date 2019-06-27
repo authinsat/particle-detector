@@ -13,7 +13,6 @@
 
 int particleDeviceAddress = 0x08;
 
-
 ParticleDetector::ParticleDetector() {
 
 }
@@ -38,30 +37,49 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     unsigned long theTime;
     uint16_t theMagnitude;
     Wire.begin();
-    Wire.beginTransmission(particleDeviceAddress);
-    char transmit[] = "get";
-    Wire.write(transmit);
-    Wire.write(2);
+    //Wire.beginTransmission(particleDeviceAddress);
+    //char transmit[] = "get";
+    //Wire.write(transmit);
+    // int test899 = 1000;
+    // byte bytes2[4];
+    // bytes2[0] = test899 & 255;
+    // bytes2[1] = (test899 >> 8) & 255;
+    // bytes2[2] = (test899 >> 16) & 255;
+    // bytes2[3] = (test899 >> 24) & 255;
+  // Wire.write(bytes2[0]);
+  // Wire.write(bytes2[1]);
+  // Wire.write(bytes2[2]);
+  // Wire.write(bytes2[3]);
+
    // Serial.println("Before end");
-    Wire.endTransmission();
-    Serial.println("After end");
-    Wire.endTransmission();
-    Wire.requestFrom(particleDeviceAddress, 6);
+    //Wire.endTransmission();
+   //Serial.println("After end");
+    //Wire.endTransmission();
+    Wire.requestFrom(particleDeviceAddress, 4);
     //Serial.println("request from");
     //4 time 2 mag
-    int testme = 4;
+    //int testme = 4;
     //Serial.println("wire available");
     //Serial.println(Wire.available());
     //while ((Wire.available())>2) {
         
         //theTime+=Wire.read();
         //Serial.println("inloo time");
-    Serial.println(Wire.available());
-    while(Wire.available()) { // slave may send less than requested
-        char c = Wire.read();   // receive a byte as character
-        Serial.print(c);
-    }
-    //Serial.println(test2);
+    //Serial.println(Wire.available());
+
+    //if(Wire.available()) { // slave may send less than requested
+       // char c = Wire.read();   // receive a byte as character
+       // Serial.print(c);
+    byte bytes[4];
+    bytes[0] = Wire.read();
+    bytes[1] = Wire.read();
+    bytes[2] = Wire.read();
+    bytes[3] = Wire.read();
+    int value = bytes[0] | ( (int)bytes[1] << 8 ) | ( (int)bytes[2] << 16 ) | ( (int)bytes[3] << 24 );
+    
+   // Serial.println(lowByte);
+    //int value = (highByte<<8 | lowByte);
+    Serial.println(value);
 
         
     //}
