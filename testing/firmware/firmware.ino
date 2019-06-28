@@ -16,11 +16,7 @@ unsigned int setDelta;
 void receiveEvent(int howMany);
 void requestEvent();
 
-struct Detection{
-  unsigned long time;
-  uint16_t magnitude;
-};
-Detection recordedDetections[1000];
+
 
 /*=========================================================================*/
 
@@ -35,13 +31,6 @@ void setup() {
    pinMode(13, OUTPUT);
    Timer3.attachInterrupt(detect);
    startDetecting();
-//   Detection test1;
-//   test1.magnitude=30;
-//   test1.time=2000;
-//   recordedDetections[0]=test1;
-//   recordedDetections[1]=test1;
-//   recordedDetections[2]=test1;
-   //Serial.println(recordedDetections[0].magnitude);
 
 }
 
@@ -58,10 +47,10 @@ void loop() {
 * time: milliseconds since last time startDetecting() was called
 * magnitude: magnitude of detection as recorded by sensor
 */
-//struct Detection{
-//  unsigned long time;
-//  uint16_t magnitude;
-//};
+struct Detection{
+  unsigned long time;
+  uint16_t magnitude;
+};
 
 /*=========================================================================*/
 //counter for recordedDetections array
@@ -84,7 +73,7 @@ unsigned int currentDelta=10;
 * array may hold up to 1000 detections at a time
 * if container is at 1000 and detect() is called, detections overwrite starting at [0]
 */
-
+Detection recordedDetections[1000];
 /*=========================================================================*/
 /*
 * Awakes the sensor to start taking detections
@@ -182,51 +171,39 @@ void receiveEvent(int howMany) {
   char instruction[4];
   char c;
   int holding = 0;
+
+  //read instruction from master
   while(Wire.available()>4) {  // loop through all but the last
     c = Wire.read(); // receive byte as a character
     instruction[holding]=c;
     holding++;
   }
-                  //  //getDetect=500;
-                  
-                  //  strcpy(whosAsking, "star");
-                  //  int holding = 0;
-                  //  while (holding<4) { // read first 3 bytes
-                  //    c = Wire.read(); // receive byte as a character
-                  //    instruction[holding]=c;
-                  //    holding++;
-                  //  }
-                  //  //strcpy(whosAsking, instruction);
-                  //  if(c=="ask"){
-                  //    int x = Wire.read();    // receive byte as an integer
-                  //    instruction[holding] = x;
-//strcpy(whosAsking, instruction);
-                  //  }
-                  //  else if(c=="set"){
-                  //    strcpy(instruction, whosAsking);
-                  //    while (4 < Wire.available()) {
-                  //      setMode = Wire.read();
-                  //    }
-                  //    setDelta = Wire.read();
-                  //  }
-      if(strcmp(instruction,"get") == 0){
-        strcpy(whosAsking,"ask1");
-        byte bytes[4];
-        bytes[0] = Wire.read();
-        bytes[1] = Wire.read();
-        bytes[2] = Wire.read();
-        bytes[3] = Wire.read();
-        getDetect = bytes[0] | ( (int)bytes[1] << 8 ) | ( (int)bytes[2] << 16 ) | ( (int)bytes[3] << 24 );
-//        //getDetect = 600;
-         //getDetect = 500;
-      }
-                  //  else if (c=="clr"){
-                  //    strcpy(instruction, whosAsking);
-                  //  }
   
-  interrupts();
+  //proceed accordingly
+  if(strcmp(instruction,"ask") == 0){
+    int x = Wire.read();
+    instruction[holding] = x;
+    strcpy(whosAsking, instruction);
+  }
+  else if(strcmp(instruction,"set") == 0){
+    strcpy(instruction, whosAsking);
+    while (4 < Wire.available()){
+      setMode = Wire.read();
+     }
+    setDelta = Wire.read();
+  }
+  //get detection
+  else if(strcmp(instruction,"get") == 0){
+    strcpy(whosAsking,"ask1");
+    byte bytes[4];
+    bytes[0] = Wire.read();
+    bytes[1] = Wire.read();
+    bytes[2] = Wire.read();
+    bytes[3] = Wire.read();
+    getDetect = bytes[0] | ( (int)bytes[1] << 8 ) | ( (int)bytes[2] << 16 ) | ( (int)bytes[3] << 24 );
+    interrupts();
+  }
 }
-
 void requestEvent(){
     noInterrupts();
     unsigned long transferTime = recordedDetections[getDetect].time;

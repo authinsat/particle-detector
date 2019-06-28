@@ -34,70 +34,40 @@ bool ParticleDetector::setupSensor() {
 
 
 ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
-    unsigned long theTime;
-    uint16_t theMagnitude;
+    //transmit to Particle Detector instructions for getDetection and desIndex
     Wire.begin();
     Wire.beginTransmission(particleDeviceAddress);
-    //char transmit[] = "get";
     Wire.write("g");
     Wire.write("e");
     Wire.write("t");
-    int test899 = 3;
     byte bytes2[4];
-    bytes2[0] = test899 & 255;
-    bytes2[1] = (test899 >> 8) & 255;
-    bytes2[2] = (test899 >> 16) & 255;
-    bytes2[3] = (test899 >> 24) & 255;
-  Wire.write(bytes2[0]);
-  Wire.write(bytes2[1]);
-  Wire.write(bytes2[2]);
-  Wire.write(bytes2[3]);
-
-   //Serial.println("Before end");
+    bytes2[0] = desIndex & 255;
+    bytes2[1] = (desIndex >> 8) & 255;
+    bytes2[2] = (desIndex >> 16) & 255;
+    bytes2[3] = (desIndex >> 24) & 255;
+    Wire.write(bytes2[0]);
+    Wire.write(bytes2[1]);
+    Wire.write(bytes2[2]);
+    Wire.write(bytes2[3]);
     Wire.endTransmission();
-   //Serial.println("After end");
-    //Wire.endTransmission();
+    //request information on the requested detection
     Wire.requestFrom(particleDeviceAddress, 6);
-    //Serial.println("request from");
-    //4 time 2 mag
-    //int testme = 4;
-    //Serial.println("wire available");
-    //Serial.println(Wire.available());
-    //while ((Wire.available())>2) {
-        
-        //theTime+=Wire.read();
-        //Serial.println("inloo time");
-    //Serial.println(Wire.available());
-
-    // while(Wire.available()) { // slave may send less than requested
-    //     char c = Wire.read();   // receive a byte as character
-    //     Serial.print(c);
-    // }
+    //read in the detection's time
     byte bytesTime[4];
     bytesTime[0] = Wire.read();
     bytesTime[1] = Wire.read();
     bytesTime[2] = Wire.read();
     bytesTime[3] = Wire.read();
     unsigned long timeTr = bytesTime[0] | ( (int)bytesTime[1] << 8 ) | ( (int)bytesTime[2] << 16 ) | ( (int)bytesTime[3] << 24 );
+   //read in the detection's magnitude
     byte bytesMag[4];
     bytesMag[0] = Wire.read();
     bytesMag[1] = Wire.read();
     uint16_t timeMg = bytesMag[0] | ( (int)bytesMag[1] << 8 );
-   // Serial.println(lowByte);
-    //int value = (highByte<<8 | lowByte);
-    Serial.println(timeTr);
-    Serial.println(timeMg);
-
-        
-    //}
-   // Serial.println("theTime");
-    //Serial.println(theTime);
-   // theMagnitude = Wire.read();
-    //Serial.println("after read");
+    //reassemble into a detection object
     ParticleDetector::Detection myDetect;
-    //myDetect.time = theTime;
-    //myDetect.magnitude = theMagnitude;
-    Serial.println("end");
+    myDetect.time = timeTr;
+    myDetect.magnitude = timeMg;
     return myDetect;
 }
 
