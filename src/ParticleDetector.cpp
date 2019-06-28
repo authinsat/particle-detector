@@ -42,7 +42,7 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     Wire.write("g");
     Wire.write("e");
     Wire.write("t");
-    int test899 = 1000;
+    int test899 = 3;
     byte bytes2[4];
     bytes2[0] = test899 & 255;
     bytes2[1] = (test899 >> 8) & 255;
@@ -57,7 +57,7 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     Wire.endTransmission();
    //Serial.println("After end");
     //Wire.endTransmission();
-    Wire.requestFrom(particleDeviceAddress, 4);
+    Wire.requestFrom(particleDeviceAddress, 6);
     //Serial.println("request from");
     //4 time 2 mag
     //int testme = 4;
@@ -73,16 +73,20 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     //     char c = Wire.read();   // receive a byte as character
     //     Serial.print(c);
     // }
-    byte bytes[4];
-    bytes[0] = Wire.read();
-    bytes[1] = Wire.read();
-    bytes[2] = Wire.read();
-    bytes[3] = Wire.read();
-    int value = bytes[0] | ( (int)bytes[1] << 8 ) | ( (int)bytes[2] << 16 ) | ( (int)bytes[3] << 24 );
-    
+    byte bytesTime[4];
+    bytesTime[0] = Wire.read();
+    bytesTime[1] = Wire.read();
+    bytesTime[2] = Wire.read();
+    bytesTime[3] = Wire.read();
+    unsigned long timeTr = bytesTime[0] | ( (int)bytesTime[1] << 8 ) | ( (int)bytesTime[2] << 16 ) | ( (int)bytesTime[3] << 24 );
+    byte bytesMag[4];
+    bytesMag[0] = Wire.read();
+    bytesMag[1] = Wire.read();
+    uint16_t timeMg = bytesMag[0] | ( (int)bytesMag[1] << 8 );
    // Serial.println(lowByte);
     //int value = (highByte<<8 | lowByte);
-    Serial.println(value);
+    Serial.println(timeTr);
+    Serial.println(timeMg);
 
         
     //}

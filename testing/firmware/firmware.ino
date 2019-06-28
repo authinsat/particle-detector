@@ -8,7 +8,7 @@
 * Timer for flux mode
 */
 char whosAsking[5];
-int getDetect=789;
+int getDetect;
 unsigned long beginning;
 unsigned long ending;
 uint8_t setMode;
@@ -35,12 +35,12 @@ void setup() {
    pinMode(13, OUTPUT);
    Timer3.attachInterrupt(detect);
    startDetecting();
-   Detection test1;
-   test1.magnitude=3;
-   test1.time=2000;
-   recordedDetections[0]=test1;
-   recordedDetections[1]=test1;
-   recordedDetections[2]=test1;
+//   Detection test1;
+//   test1.magnitude=30;
+//   test1.time=2000;
+//   recordedDetections[0]=test1;
+//   recordedDetections[1]=test1;
+//   recordedDetections[2]=test1;
    //Serial.println(recordedDetections[0].magnitude);
 
 }
@@ -105,7 +105,7 @@ void setupSensorCounterpart(){
 * @return none
 */
 void startDetecting(){
-    //Timer3.initialize(currentDelta);
+    Timer3.initialize(currentDelta);
     timerr = 0;
 }
 /*=========================================================================*/
@@ -229,16 +229,25 @@ void receiveEvent(int howMany) {
 
 void requestEvent(){
     noInterrupts();
-    //getDetect = 450;
-    byte bytes[4];
-    bytes[0] = getDetect & 255;
-    bytes[1] = (getDetect >> 8) & 255;
-    bytes[2] = (getDetect >> 16) & 255;
-    bytes[3] = (getDetect >> 24) & 255;
-    Wire.write(bytes[0]);
-    Wire.write(bytes[1]);
-    Wire.write(bytes[2]);
-    Wire.write(bytes[3]);
+    unsigned long transferTime = recordedDetections[getDetect].time;
+    uint16_t transferMag = recordedDetections[getDetect].magnitude;
+    
+    byte bytesTime[4];
+    bytesTime[0] = transferTime & 255;
+    bytesTime[1] = (transferTime >> 8) & 255;
+    bytesTime[2] = (transferTime >> 16) & 255;
+    bytesTime[3] = (transferTime >> 24) & 255;
+    Wire.write(bytesTime[0]);
+    Wire.write(bytesTime[1]);
+    Wire.write(bytesTime[2]);
+    Wire.write(bytesTime[3]);
+    
+    byte bytesMag[2];
+    bytesMag[0] = transferMag & 255;
+    bytesMag[1] = (transferMag >> 8) & 255;
+    Wire.write(bytesMag[0]);
+    Wire.write(bytesMag[1]);
+
 //  for(int g = 0;g<5;g++){
 //    Wire.write(whosAsking[g]);
   //}
