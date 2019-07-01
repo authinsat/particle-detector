@@ -86,12 +86,12 @@ double  ParticleDetector::getTimeSinceLastDetection() {
         bytesSince[iter] = Wire.read();
     }
 
-    // int eights = 8;
-    // myTime = bytesSince[0];
-    // for(int iter = 1; iter<4; iter++){
-    //     myTime = myTime | ( (int)bytesSince[iter] << eights ); 
-    //     eights+=8;
-    // }
+    int eights = 8;
+    myTime = bytesSince[0];
+    for(int iter = 1; iter<4; iter++){
+        myTime = (byte)myTime | ( (byte)bytesSince[iter] << eights ); 
+        eights+=8;
+    }
     return myTime;
 }
 

@@ -221,23 +221,15 @@ void requestEvent(){
   if((strcmp(whosAsking,"ask0")) == 0){
     //getTimeSinceLastDetection
     double c = timerr-recordedDetections[rDetectCounter].time;
-    byte bytesTime[8];
-//    bytesSince[0] = c & 255;
-//    bytesSince[1] = (c >> 8) & 255;
-//    bytesSince[2] = (c >> 16) & 255;
-//    bytesSince[3] = (c >> 24) & 255;
-//    bytesSince[4] = (c >> 32) & 255;
-//    bytesSince[5] = (c >> 40) & 255;
-//    bytesSince[6] = (c >> 48) & 255;
-//    bytesSince[7] = (c >> 56) & 255;
-//    Wire.write(bytesSince[0]);
-//    Wire.write(bytesSince[1]);
-//    Wire.write(bytesSince[2]);
-//    Wire.write(bytesSince[3]);
-//    Wire.write(bytesSince[4]);
-//    Wire.write(bytesSince[5]);
-//    Wire.write(bytesSince[6]);
-//    Wire.write(bytesSince[7]);
+    byte bytesSince[8];
+    int eights = 0;
+    for(int iter = 0; iter<4; iter++){
+      bytesSince[iter] = ((byte)c >> eights) & 255;
+      eights+=8;
+    }
+    for(int iter = 0;iter<4; iter++){
+      Wire.write(bytesSince[iter]);
+    }
   }
   else if((strcmp(whosAsking,"ask1")) == 0){
     //getDetection
@@ -289,14 +281,14 @@ void requestEvent(){
     }
     float averageRet = rDetectSize/minutesProRun;
     byte byteAsk4[4];
-//    byteAsk4[0] = averageRet & 255;
-//    byteAsk4[1] = (averageRet >> 8) & 255;
-//    byteAsk4[2] = (averageRet >> 16) & 255;
-//    byteAsk4[3] = (averageRet >> 24) & 255;
-//    Wire.write(byteAsk4[0]);
-//    Wire.write(byteAsk4[1]);
-//    Wire.write(byteAsk4[2]);
-//    Wire.write(byteAsk4[3]);
+    byteAsk4[0] = (byte)averageRet & 255;
+    byteAsk4[1] = ((byte)averageRet >> 8) & 255;
+    byteAsk4[2] = ((byte)averageRet >> 16) & 255;
+    byteAsk4[3] = ((byte)averageRet >> 24) & 255;
+    Wire.write(byteAsk4[0]);
+    Wire.write(byteAsk4[1]);
+    Wire.write(byteAsk4[2]);
+    Wire.write(byteAsk4[3]);
     
 
   }
@@ -312,14 +304,14 @@ void requestEvent(){
     }
     float average = counting/cSize; 
     byte byteAsk5[4];
-//    byteAsk5[0] = average & 255;
-//    byteAsk5[1] = (average >> 8) & 255;
-//    byteAsk5[2] = (average >> 16) & 255;
-//    byteAsk5[3] = (average >> 24) & 255;
-//    Wire.write(byteAsk5[0]);
-//    Wire.write(byteAsk5[1]);
-//    Wire.write(byteAsk5[2]);
-//    Wire.write(byteAsk5[3]);
+    byteAsk5[0] = (byte)average & 255;
+    byteAsk5[1] = ((byte)average >> 8) & 255;
+    byteAsk5[2] = ((byte)average >> 16) & 255;
+    byteAsk5[3] = ((byte)average >> 24) & 255;
+    Wire.write(byteAsk5[0]);
+    Wire.write(byteAsk5[1]);
+    Wire.write(byteAsk5[2]);
+    Wire.write(byteAsk5[3]);
     interrupts();
   }
   else if(strcmp(whosAsking,"ask6") == 0){
@@ -331,14 +323,14 @@ void requestEvent(){
     }
       float average = counting/cSize; 
       byte byteAsk6[4];
-//    byteAsk6[0] = average & 255;
-//    byteAsk6[1] = (average >> 8) & 255;
-//    byteAsk6[2] = (average >> 16) & 255;
-//    byteAsk6[3] = (average >> 24) & 255;
-//    Wire.write(byteAsk6[0]);
-//    Wire.write(byteAsk6[1]);
-//    Wire.write(byteAsk6[2]);
-//    Wire.write(byteAsk6[3]);
+    byteAsk6[0] = (byte)average & 255;
+    byteAsk6[1] = ((byte)average >> 8) & 255;
+    byteAsk6[2] = ((byte)average >> 16) & 255;
+    byteAsk6[3] = ((byte)average >> 24) & 255;
+    Wire.write(byteAsk6[0]);
+    Wire.write(byteAsk6[1]);
+    Wire.write(byteAsk6[2]);
+    Wire.write(byteAsk6[3]);
   }
   else if(!(whosAsking=="set")){
     if(setMode==currentMode && setDelta==currentDelta){
