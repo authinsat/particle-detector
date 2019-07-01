@@ -104,7 +104,7 @@ void startDetecting(){
 * @param delta. desired delta time between data collections in seconds if data collection mode is 1: Flux. Required if mode is 1: Flux. Default argument = 0.
 * @return none
 */
-void setDataMode(uint8_t mode, unsigned int delta=10){
+void setDataMode(uint8_t mode, unsigned int delta){
     if(currentDelta!=delta){
         currentDelta = delta;
         clearRecordedDetections();
@@ -166,6 +166,8 @@ void clearRecordedDetections(){
 /*
 * 
 */
+
+//---------------------------------------------------------------------------------//
 void receiveEvent(int howMany) {
   noInterrupts();
   char instruction[4];
@@ -180,20 +182,22 @@ void receiveEvent(int howMany) {
   }
   
   //proceed accordingly
-  if(strcmp(instruction,"ask") == 0){
+  if((strcmp(instruction,"ask")) == 0){
     int x = Wire.read();
     instruction[holding] = x;
     strcpy(whosAsking, instruction);
   }
-  else if(strcmp(instruction,"set") == 0){
+  else if((strcmp(instruction,"set")) == 0){
     strcpy(instruction, whosAsking);
-    while (4 < Wire.available()){
-      setMode = Wire.read();
-     }
-    setDelta = Wire.read();
+    setMode = Wire.read();
+    byte bytes[2];
+    bytes[0] = Wire.read();
+    bytes[1] = Wire.read();
+    setDelta = bytes[0] | ( (int)bytes[1] << 8 );
+    setDataMode(setMode,setDelta);
   }
   //get detection
-  else if(strcmp(instruction,"get") == 0){
+  else if((strcmp(instruction,"get")) == 0){
     strcpy(whosAsking,"ask1");
     byte bytes[4];
     bytes[0] = Wire.read();
@@ -203,106 +207,159 @@ void receiveEvent(int howMany) {
     getDetect = bytes[0] | ( (int)bytes[1] << 8 ) | ( (int)bytes[2] << 16 ) | ( (int)bytes[3] << 24 );
     interrupts();
   }
+  else if((strcmp(instruction,"clr")) == 0){
+    //clear recordedDetections
+    noInterrupts();
+    clearRecordedDetections();
+  }
 }
+
+//---------------------------------------------------------------------------------//
 void requestEvent(){
     noInterrupts();
+
+  if((strcmp(whosAsking,"ask0")) == 0){
+    //getTimeSinceLastDetection
+    double c = timerr-recordedDetections[rDetectCounter].time;
+    byte bytesTime[8];
+//    bytesSince[0] = c & 255;
+//    bytesSince[1] = (c >> 8) & 255;
+//    bytesSince[2] = (c >> 16) & 255;
+//    bytesSince[3] = (c >> 24) & 255;
+//    bytesSince[4] = (c >> 32) & 255;
+//    bytesSince[5] = (c >> 40) & 255;
+//    bytesSince[6] = (c >> 48) & 255;
+//    bytesSince[7] = (c >> 56) & 255;
+//    Wire.write(bytesSince[0]);
+//    Wire.write(bytesSince[1]);
+//    Wire.write(bytesSince[2]);
+//    Wire.write(bytesSince[3]);
+//    Wire.write(bytesSince[4]);
+//    Wire.write(bytesSince[5]);
+//    Wire.write(bytesSince[6]);
+//    Wire.write(bytesSince[7]);
+  }
+  else if((strcmp(whosAsking,"ask1")) == 0){
+    //getDetection
     unsigned long transferTime = recordedDetections[getDetect].time;
     uint16_t transferMag = recordedDetections[getDetect].magnitude;
     
     byte bytesTime[4];
-    bytesTime[0] = transferTime & 255;
-    bytesTime[1] = (transferTime >> 8) & 255;
-    bytesTime[2] = (transferTime >> 16) & 255;
-    bytesTime[3] = (transferTime >> 24) & 255;
-    Wire.write(bytesTime[0]);
-    Wire.write(bytesTime[1]);
-    Wire.write(bytesTime[2]);
-    Wire.write(bytesTime[3]);
+    int eights = 0;
+    for(int iter = 0; iter<4; iter++){
+      bytesTime[iter] = (transferTime >> eights) & 255;
+      eights+=8;
+    }
+    for(int iter = 0; iter<4; iter++){
+      Wire.write(bytesTime[iter]);
+    }
     
     byte bytesMag[2];
     bytesMag[0] = transferMag & 255;
     bytesMag[1] = (transferMag >> 8) & 255;
     Wire.write(bytesMag[0]);
     Wire.write(bytesMag[1]);
-
-//  for(int g = 0;g<5;g++){
-//    Wire.write(whosAsking[g]);
-  //}
-//    Wire.write("w");
-//    Wire.write("w");
-//    Wire.write("w");
-//    Wire.write("w");
-    interrupts();
-  //getDetect = 900;
-  //-----------------------------
-
-  // }
-  //-----------------------------
-  
-//  if(!(whosAsking=="ask0")){
-//    //getTimeSinceLastDetection
-//    double c = timerr-recordedDetections[rDetectCounter].time;
-//    Wire.write(static_cast<byte>(c));
-//  }
-//  else if(!(whosAsking=="ask1")){
-//    //getDetection
-//    //Wire.write(recordedDetections[getDetect].time);
-//    //Wire.write(recordedDetections[getDetect].magnitude);
-//    //getDetect = 567;
-//    }
+    }
     
-//  else if(!(whosAsking=="ask2")){
-//    //checkDelta
-//    Wire.write(currentDelta);
-//  }
-//  else if(!(whosAsking=="ask3")){
-//    //checkMode
-//    Wire.write(currentMode);
-//  }
-//  else if(!(whosAsking=="ask4")){
-//    //getDetectionsPerMin
-//    float minutesProRun;
-//    if(rDetectCounter==999){
-//        minutesProRun = (timerr-(recordedDetections[0].time))/60000.0;
-//    }
-//    else{
-//        minutesProRun = (timerr-(recordedDetections[rDetectCounter+1].time))/60000.0;
-//    }
-//    float averageRet = rDetectSize/minutesProRun;
-//    Wire.write(static_cast<byte>(averageRet));
-//  }
-//  else if(!(whosAsking=="ask5")){
-//    //getAvgTimeBetweenDetections
-//    int cSize = rDetectSize;
-//    float counting = 0;
-//    for(int i=0; i<cSize-1; i++){
-//        if(i!=rDetectCounter){
-//            counting+=(recordedDetections[i+1].time-recordedDetections[i].time);
-//        }
-//    }
-//    float average = counting/cSize; 
-//    Wire.write(static_cast<byte>(average));
-//  }
-//  else if(!(whosAsking=="ask6")){
-//    //getAvgMagnitude
-//    float cSize = rDetectSize;
-//    float counting = 0;
-//    for(int i=0; i<cSize; i++){
-//        counting+=recordedDetections[i].magnitude;
-//    }
-//    float average = counting/cSize; 
-//    Wire.write(static_cast<byte>(average));
-//  }
-//  else if(!(whosAsking=="set")){
-//    setDataMode(setMode,setDelta);
-//    Wire.write(true);
-//  }
-//  else if(!(whosAsking=="clr")){
-//    clearRecordedDetections();
-//    Wire.write(true);
-//  }
-//  else{
-//    Wire.write(false);
-//  }
+  else if((strcmp(whosAsking,"ask2")) == 0){
+    //checkDelta
+    byte bytesDelta[4];
+    unsigned int transferDelta = currentDelta;
+    bytesDelta[0] = transferDelta & 255;
+    bytesDelta[1] = (transferDelta >> 8) & 255;
+    bytesDelta[2] = (transferDelta >> 16) & 255;
+    bytesDelta[3] = (transferDelta >> 24) & 255;
+    Wire.write(bytesDelta[0]);
+    Wire.write(bytesDelta[1]);
+    Wire.write(bytesDelta[2]);
+    Wire.write(bytesDelta[3]);
+  }
+  else if((strcmp(whosAsking,"ask3")) == 0){
+    //checkMode
+    Wire.write(currentMode);
+  }
+  else if((strcmp(whosAsking,"ask4")) == 0){
+    //getDetectionsPerMin
+    float minutesProRun;
+    if(rDetectCounter==999){
+        minutesProRun = (timerr-(recordedDetections[0].time))/60000.0;
+    }
+    else{
+        minutesProRun = (timerr-(recordedDetections[rDetectCounter+1].time))/60000.0;
+    }
+    float averageRet = rDetectSize/minutesProRun;
+    byte byteAsk4[4];
+//    byteAsk4[0] = averageRet & 255;
+//    byteAsk4[1] = (averageRet >> 8) & 255;
+//    byteAsk4[2] = (averageRet >> 16) & 255;
+//    byteAsk4[3] = (averageRet >> 24) & 255;
+//    Wire.write(byteAsk4[0]);
+//    Wire.write(byteAsk4[1]);
+//    Wire.write(byteAsk4[2]);
+//    Wire.write(byteAsk4[3]);
+    
 
+  }
+  else if(strcmp(whosAsking,"ask5") == 0){
+    noInterrupts();
+    //getAvgTimeBetweenDetections
+    int cSize = rDetectSize;
+    float counting = 0;
+    for(int i=0; i<cSize-1; i++){
+        if(i!=rDetectCounter){
+            counting+=(recordedDetections[i+1].time-recordedDetections[i].time);
+        }
+    }
+    float average = counting/cSize; 
+    byte byteAsk5[4];
+//    byteAsk5[0] = average & 255;
+//    byteAsk5[1] = (average >> 8) & 255;
+//    byteAsk5[2] = (average >> 16) & 255;
+//    byteAsk5[3] = (average >> 24) & 255;
+//    Wire.write(byteAsk5[0]);
+//    Wire.write(byteAsk5[1]);
+//    Wire.write(byteAsk5[2]);
+//    Wire.write(byteAsk5[3]);
+    interrupts();
+  }
+  else if(strcmp(whosAsking,"ask6") == 0){
+    //getAvgMagnitude
+    float cSize = rDetectSize;
+    float counting = 0;
+    for(int i=0; i<cSize; i++){
+        counting+=recordedDetections[i].magnitude;
+    }
+      float average = counting/cSize; 
+      byte byteAsk6[4];
+//    byteAsk6[0] = average & 255;
+//    byteAsk6[1] = (average >> 8) & 255;
+//    byteAsk6[2] = (average >> 16) & 255;
+//    byteAsk6[3] = (average >> 24) & 255;
+//    Wire.write(byteAsk6[0]);
+//    Wire.write(byteAsk6[1]);
+//    Wire.write(byteAsk6[2]);
+//    Wire.write(byteAsk6[3]);
+  }
+  else if(!(whosAsking=="set")){
+    if(setMode==currentMode && setDelta==currentDelta){
+      Wire.write(true);
+    }
+    else{
+      Wire.write(false);
+    }
+    interrupts();
+  }
+  else if(!(whosAsking=="clr")){
+    if(rDetectSize==0){
+      Wire.write(true);
+     }
+     else{
+      Wire.write(false);
+     }
+    interrupts();
+  }
+  else{
+    Wire.write(false);
+  }
+  interrupts();
 }

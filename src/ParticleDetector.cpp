@@ -37,30 +37,33 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     //transmit to Particle Detector instructions for getDetection and desIndex
     Wire.begin();
     Wire.beginTransmission(particleDeviceAddress);
-    Wire.write("g");
-    Wire.write("e");
-    Wire.write("t");
+    Wire.write("get");
     byte bytes2[4];
     bytes2[0] = desIndex & 255;
     bytes2[1] = (desIndex >> 8) & 255;
     bytes2[2] = (desIndex >> 16) & 255;
     bytes2[3] = (desIndex >> 24) & 255;
-    Wire.write(bytes2[0]);
-    Wire.write(bytes2[1]);
-    Wire.write(bytes2[2]);
-    Wire.write(bytes2[3]);
+    for(int iter = 0;iter<4;iter++){
+        Wire.write(bytes2[iter]);
+    }
     Wire.endTransmission();
     //request information on the requested detection
     Wire.requestFrom(particleDeviceAddress, 6);
     //read in the detection's time
-    byte bytesTime[4];
-    bytesTime[0] = Wire.read();
-    bytesTime[1] = Wire.read();
-    bytesTime[2] = Wire.read();
-    bytesTime[3] = Wire.read();
-    unsigned long timeTr = bytesTime[0] | ( (int)bytesTime[1] << 8 ) | ( (int)bytesTime[2] << 16 ) | ( (int)bytesTime[3] << 24 );
+    
+    byte bytesTime[4];    
+    for(int iter = 0; iter<4; iter++){
+        bytesTime[iter] = Wire.read();
+    }
+    
+    int eights = 8;
+    unsigned long timeTr = bytesTime[0];
+    for(int iter = 1; iter<4; iter++){
+        timeTr = timeTr | ( (int)bytesTime[iter] << eights ); 
+        eights+=8;
+    }
    //read in the detection's magnitude
-    byte bytesMag[4];
+    byte bytesMag[2];
     bytesMag[0] = Wire.read();
     bytesMag[1] = Wire.read();
     uint16_t timeMg = bytesMag[0] | ( (int)bytesMag[1] << 8 );
@@ -77,9 +80,18 @@ double  ParticleDetector::getTimeSinceLastDetection() {
     Wire.write("ask0");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 8);
-    while (Wire.available()) {
-        myTime = Wire.read();
+    
+    byte bytesSince[4];
+    for(int iter = 0; iter<4; iter++){
+        bytesSince[iter] = Wire.read();
     }
+
+    // int eights = 8;
+    // myTime = bytesSince[0];
+    // for(int iter = 1; iter<4; iter++){
+    //     myTime = myTime | ( (int)bytesSince[iter] << eights ); 
+    //     eights+=8;
+    // }
     return myTime;
 }
 
@@ -90,8 +102,15 @@ unsigned int ParticleDetector::checkDelta(){
     Wire.write("ask2");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 4);
-    while (Wire.available()) { 
-        myDelta = Wire.read();
+    byte bytesDelta[4];
+    for(int iter = 0; iter<4; iter++){
+        bytesDelta[iter] = Wire.read();
+    }
+    int eights = 8;
+    myDelta = bytesDelta[0];
+    for(int iter = 1; iter<4; iter++){
+        myDelta = myDelta | ( (int)bytesDelta[iter] << eights ); 
+        eights+=8;
     }
     return myDelta;
 }
@@ -135,8 +154,16 @@ unsigned long  ParticleDetector::getDetectionsPerMin() {
     Wire.write("ask4");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 4);
-    while (Wire.available()) { 
-        myPerMin = Wire.read();
+    byte bytesPerMin[4];    
+    for(int iter = 0; iter<4; iter++){
+        bytesPerMin[iter] = Wire.read();
+    }
+    
+    int eights = 8;
+    myPerMin = bytesPerMin[0];
+    for(int iter = 1; iter<4; iter++){
+        myPerMin = myPerMin | ( (int)bytesPerMin[iter] << eights ); 
+        eights+=8;
     }
     return myPerMin;
 }
@@ -148,9 +175,7 @@ float  ParticleDetector::getAvgTimeBetweenDetections() {
     Wire.write("ask5");
     Wire.endTransmission();
     Wire.requestFrom(particleDeviceAddress, 4);
-    while (Wire.available()) { 
-        myAvgTime = Wire.read();
-    }
+    
     return myAvgTime;
 }
 
