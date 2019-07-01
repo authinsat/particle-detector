@@ -160,6 +160,7 @@ void detect(){
 void clearRecordedDetections(){
     rDetectSize = 0;
     rDetectCounter = 0;
+    timerr = 0;
     
 }
 /*=========================================================================*/
