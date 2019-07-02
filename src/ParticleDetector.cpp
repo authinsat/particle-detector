@@ -35,14 +35,15 @@ bool ParticleDetector::setupSensor() {
 
 ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     //transmit to Particle Detector instructions for getDetection and desIndex
-    Wire.begin();
-    Wire.beginTransmission(particleDeviceAddress);
-    Wire.write("get");
     byte bytes2[4];
     bytes2[0] = desIndex & 255;
     bytes2[1] = (desIndex >> 8) & 255;
     bytes2[2] = (desIndex >> 16) & 255;
     bytes2[3] = (desIndex >> 24) & 255;
+    Wire.begin();
+    Wire.beginTransmission(particleDeviceAddress);
+    Wire.write("get");
+
     for(int iter = 0;iter<4;iter++){
         Wire.write(bytes2[iter]);
     }
@@ -51,7 +52,6 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     Wire.requestFrom(particleDeviceAddress, 6);
     //read in the detection's time
     
-    byte bytesTime[4];    
     for(int iter = 0; iter<4; iter++){
         bytesTime[iter] = Wire.read();
     }
@@ -194,11 +194,15 @@ float  ParticleDetector::getAvgMagnitude() {
 
 
 
-void ParticleDetector::receiveEvent(int howMany) {
-  while (1 < Wire.available()) { // loop through all but the last
-    char c = Wire.read(); // receive byte as a character
-    Serial.print(c);         // print the character
-  }
-  int x = Wire.read();    // receive byte as an integer
-  Serial.println(x);         // print the integer
-}
+// void ParticleDetector::receiveEvent(int howMany) {
+//   while (1 < Wire.available()) { // loop through all but the last
+//     char c = Wire.read(); // receive byte as a character
+//     Serial.print(c);         // print the character
+//   }
+//   int x = Wire.read();    // receive byte as an integer
+//   Serial.println(x);         // print the integer
+// }
+
+
+
+
