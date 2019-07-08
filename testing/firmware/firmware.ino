@@ -42,7 +42,7 @@ void setup() {
 }
 
 void loop() {
-  delay(700);
+  delay(1000);
 }
 
 /*=========================================================================*/
@@ -177,7 +177,7 @@ void clearRecordedDetections(){
 //---------------------------------------------------------------------------------//
 void receiveEvent(int howMany) {
   //flagMe = true;
-  noInterrupts();
+  //noInterrupts();
   char instruction[4];
   char c;
   strcpy(whosAsking,"");
@@ -220,12 +220,12 @@ void receiveEvent(int howMany) {
     noInterrupts();
     clearRecordedDetections();
   }
-  interrupts();
+ // interrupts();
 }
 
 //---------------------------------------------------------------------------------//
 void requestEvent(){
-    noInterrupts();
+   // noInterrupts();
 
   if((strcmp(whosAsking,"ask0")) == 0){
     //getTimeSinceLastDetection
@@ -268,6 +268,25 @@ void requestEvent(){
     Wire.write(bytesMag[0]);
     Wire.write(bytesMag[1]);
 
+//
+//    eights = 8;
+//    unsigned long timeTr = bytesTime[0];
+//    for(int iter = 1; iter<4; iter++){
+//        timeTr = timeTr | ( (int)bytesTime[iter] << eights ); 
+//        eights+=8;
+//    }
+//
+//
+//    uint16_t timeMg = bytesMag[0] | ( (int)bytesMag[1] << 8 );
+//
+//
+//    Serial.println(timeTr);
+//    Serial.println(timeMg);
+
+
+
+
+
    }
    
  else if((strcmp(whosAsking,"ask2")) == 0){
@@ -276,12 +295,9 @@ void requestEvent(){
    unsigned int transferDelta = currentDelta;
    bytesDelta[0] = transferDelta & 255;
    bytesDelta[1] = (transferDelta >> 8) & 255;
-   bytesDelta[2] = (transferDelta >> 16) & 255;
-   bytesDelta[3] = (transferDelta >> 24) & 255;
    Wire.write(bytesDelta[0]);
    Wire.write(bytesDelta[1]);
-   Wire.write(bytesDelta[2]);
-   Wire.write(bytesDelta[3]);
+
  }
  else if((strcmp(whosAsking,"ask3")) == 0){
    //checkMode
@@ -356,7 +372,6 @@ void requestEvent(){
    else{
      Wire.write(false);
    }
-   interrupts();
  }
  else if(!(whosAsking=="clr")){
    if(rDetectSize==0){
@@ -365,12 +380,11 @@ void requestEvent(){
     else{
      Wire.write(false);
     }
-   interrupts();
  }
  else{
    Wire.write(false);
  }
-  interrupts();
+  //interrupts();
 }
 
 void callDuck(){
