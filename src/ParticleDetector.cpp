@@ -13,6 +13,7 @@
 
 int particleDeviceAddress = 0x08;
 
+
 ParticleDetector::ParticleDetector() {
 
 }
@@ -51,22 +52,55 @@ ParticleDetector::Detection ParticleDetector::getDetection(int desIndex){
     //request information on the requested detection
     Wire.requestFrom(particleDeviceAddress, 6);
     //read in the detection's time
-    
+    byte bytesTime[4];
     for(int iter = 0; iter<4; iter++){
         bytesTime[iter] = Wire.read();
     }
-    
     int eights = 8;
     unsigned long timeTr = bytesTime[0];
     for(int iter = 1; iter<4; iter++){
         timeTr = timeTr | ( (int)bytesTime[iter] << eights ); 
         eights+=8;
     }
+    
    //read in the detection's magnitude
     byte bytesMag[2];
     bytesMag[0] = Wire.read();
     bytesMag[1] = Wire.read();
     uint16_t timeMg = bytesMag[0] | ( (int)bytesMag[1] << 8 );
+    
+    
+    //Check detection (accuracy?) 
+    while(bytesMag==0 & timeMg==0){
+        Wire.begin();
+        Wire.beginTransmission(particleDeviceAddress);
+        Wire.write("get");
+
+        for(int iter = 0;iter<4;iter++){
+            Wire.write(bytes2[iter]);
+        }
+        Wire.endTransmission();
+        //request information on the requested detection
+        Wire.requestFrom(particleDeviceAddress, 6);
+        //read in the detection's time
+        byte bytesTime[4];
+        for(int iter = 0; iter<4; iter++){
+            bytesTime[iter] = Wire.read();
+        }
+        int eights = 8;
+        unsigned long timeTr = bytesTime[0];
+        for(int iter = 1; iter<4; iter++){
+            timeTr = timeTr | ( (int)bytesTime[iter] << eights ); 
+            eights+=8;
+        }
+        //read in the detection's magnitude
+        byte bytesMag[2];
+        bytesMag[0] = Wire.read();
+        bytesMag[1] = Wire.read();
+        uint16_t timeMg = bytesMag[0] | ( (int)bytesMag[1] << 8 );
+    }
+
+
     //reassemble into a detection object
     ParticleDetector::Detection myDetect;
     myDetect.time = timeTr;

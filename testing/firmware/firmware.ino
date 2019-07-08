@@ -42,18 +42,7 @@ void setup() {
 }
 
 void loop() {
-//  if(timerr%5000==0){
-//    callDuck();
-//  }
-//if(flagMe){
-//  digitalWrite(ledMe,HIGH);
-//  
-//  digitalWrite(ledMe,LOW);
-//  flagMe=false;
-//}
-  for(int iter = 0; iter<=1000000; iter++){
-     __asm__("nop");
-  }
+  delay(700);
 }
 
 /*=========================================================================*/
@@ -149,7 +138,7 @@ void setDataMode(uint8_t mode, unsigned int delta){
 * @return none
 */
 void detect(){
-    //noInterrupts();
+    noInterrupts();
     Detection newDetection;
     newDetection.time = timerr;
     newDetection.magnitude = 4; 
@@ -163,9 +152,9 @@ void detect(){
     rDetectCounter++;
     if(rDetectCounter>999){
         rDetectCounter = 0;
-        //rDetectSize--;
     }
-    //interrupts();
+ 
+    interrupts();
 }
 /*=========================================================================*/
 /*
@@ -231,6 +220,7 @@ void receiveEvent(int howMany) {
     noInterrupts();
     clearRecordedDetections();
   }
+  interrupts();
 }
 
 //---------------------------------------------------------------------------------//
@@ -260,6 +250,7 @@ void requestEvent(){
     //getDetection
     unsigned long transferTime = recordedDetections[getDetect].time;
     uint16_t transferMag = recordedDetections[getDetect].magnitude;
+
     
     byte bytesTime[4];
     int eights = 0;
