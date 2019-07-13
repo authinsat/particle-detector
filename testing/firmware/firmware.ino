@@ -177,7 +177,7 @@ void clearRecordedDetections(){
 //---------------------------------------------------------------------------------//
 void receiveEvent(int howMany) {
   //flagMe = true;
-  //noInterrupts();
+  noInterrupts();
   char instruction[4];
   char c;
   strcpy(whosAsking,"");
@@ -190,10 +190,8 @@ void receiveEvent(int howMany) {
   }
   
   //proceed accordingly
-  if((strcmp(instruction,"ask")) == 0){
-    int x = Wire.read();
-    instruction[holding] = x;
-    strcpy(whosAsking, instruction);
+  if((strcmp(instruction,"del")) == 0){
+    strcpy(whosAsking, "ask2");
   }
   else if((strcmp(instruction,"set")) == 0){
     strcpy(instruction, whosAsking);
@@ -291,7 +289,7 @@ void requestEvent(){
    
  else if((strcmp(whosAsking,"ask2")) == 0){
    //checkDelta
-   byte bytesDelta[4];
+   byte bytesDelta[2];
    unsigned int transferDelta = currentDelta;
    bytesDelta[0] = transferDelta & 255;
    bytesDelta[1] = (transferDelta >> 8) & 255;
@@ -345,7 +343,6 @@ void requestEvent(){
    Wire.write(byteAsk5[1]);
    Wire.write(byteAsk5[2]);
    Wire.write(byteAsk5[3]);
-   interrupts();
  }
  else if(strcmp(whosAsking,"ask6") == 0){
    //getAvgMagnitude
@@ -384,7 +381,7 @@ void requestEvent(){
  else{
    Wire.write(false);
  }
-  //interrupts();
+  interrupts();
 }
 
 void callDuck(){
