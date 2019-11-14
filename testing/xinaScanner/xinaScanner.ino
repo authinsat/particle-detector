@@ -27,8 +27,8 @@ void scanPorts() {
         Wire.begin(portArray[i], portArray[j]);
         bool found = check_if_exist_I2C();
         if(found){
-          Serial.println(i);
-          Serial.println(j);
+          //Serial.println(i);
+          //Serial.println(j);
         }
         
       }
@@ -48,6 +48,8 @@ bool check_if_exist_I2C() {
     //Serial.println(address);
     Wire.beginTransmission(address);
     error = Wire.endTransmission();
+    Serial.print("er");
+    Serial.print(error);
 
     if (error == 0){
       Serial.print("I2C device found at address 0x");
