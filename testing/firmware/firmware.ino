@@ -12,8 +12,8 @@ unsigned long beginning;
 unsigned long ending;
 uint8_t setMode;
 unsigned int setDelta;
-void receiveEvent(int howMany);
-void requestEvent();
+//void receiveEvent(int howMany);
+//void requestEvent();
 elapsedMillis timerr;
 //volatile bool flagMe = false;
 int ledMe = 13;
@@ -27,7 +27,7 @@ void setup() {
    while(!Serial);
    // delay(2000);
    Serial.println("setup");
-   setupSensorCounterpart();
+   //setupSensorCounterpart();
    Wire.begin(0x08);
    Wire.onReceive(receiveEvent);
    Wire.onRequest(requestEvent);
@@ -171,15 +171,31 @@ void clearRecordedDetections(){
 
 //---------------------------------------------------------------------------------//
 void receiveEvent(int howMany) {
+//  Serial.println("receiving");
   noInterrupts();
+  
   char instruction[5];
   int holding = 0;
-  byte bytes[4];
+  byte bytes[2];
+//  unsigned int twenty = 20;
+//  byte bytes2[2];
+//  bytes2[0] = twenty & 255;
+//  bytes2[1] = (twenty >> 8) & 255;
+//  Serial.println("twenty");
+//  Serial.println(bytes2[0]);
+//  Serial.println(bytes2[1]);
+
+//  Serial.println("reading");
   bytes[0] = Wire.read();
+//  Serial.println(bytes[0]);
   bytes[1] = Wire.read();
-  bytes[2] = Wire.read();
-  bytes[3] = Wire.read();
-  setDelta = bytes[0] | ( (int)bytes[1] << 8 ) | ( (int)bytes[2] << 16 ) | ( (int)bytes[3] << 24 );
+//  Serial.println(bytes[1]);
+  
+  setDelta = bytes[0] | ( (int)bytes[1] << 8 );
   Serial.println(setDelta); //unsigned int
   interrupts();
   }
+
+ void requestEvent()
+{
+}
