@@ -147,7 +147,6 @@ class ParticleDetector{
         /*=========================================================================*/
         /*
         * returns the current Delta time
-        * Use returnRecordedDetections() to preserve recordedDetections before use
         * @return currentDelta
         */
         unsigned int checkDelta();
@@ -159,7 +158,7 @@ class ParticleDetector{
         uint8_t checkMode();
         /*=========================================================================*/
         /*
-        * changes the current data collection mode and/or delta
+        * changes the current data collection mode and delta
         * @return none
         */
         bool changeMode(uint8_t mode, unsigned int delta=10);

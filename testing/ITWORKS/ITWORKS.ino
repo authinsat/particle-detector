@@ -17,6 +17,7 @@
 const int16_t I2C_MASTER = 0x42;
 const int16_t I2C_SLAVE = 0x08;
 byte error;
+unsigned int setDelta = 14;
 void setup() {
   Serial.begin(115200);
   while (!Serial);
@@ -33,12 +34,19 @@ void loop() {
 
   if (nextPing) {
     Wire.beginTransmission(I2C_SLAVE); // transmit to device #8
-    //Wire.write("x is ");        // sends five bytes
-    //Wire.write(x);              // sends one byte
+    byte bytes2[4];
+    bytes2[0] = setDelta & 255;
+    bytes2[1] = (setDelta >> 8) & 255;
+    bytes2[2] = (setDelta >> 16) & 255;
+    bytes2[3] = (setDelta >> 24) & 255;
+    Wire.write(bytes2[0]);        // sends five bytes
+    Wire.write(bytes2[1]);
+    Wire.write(bytes2[2]);
+    Wire.write(bytes2[3]);
     error = Wire.endTransmission();
     Serial.print("ir: ");
     Serial.println(error);
-    //x++;
+    x++;
   }
 }
 
