@@ -26,15 +26,12 @@ void setup()
 {
    Serial.begin(115200);
    while(!Serial);
-   // delay(2000);
    Serial.println("setup");
    setupSensorCounterpart();
    Wire.begin(0x08);
    Wire.onReceive(receiveEvent);
    Wire.onRequest(requestEvent);
    Timer3.attachInterrupt(detect);
- 
-
 }
 
 void loop() 
